@@ -1,0 +1,366 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #f5f5f5;
+  background: #050505;
+  color-scheme: dark;
+}
+
+html {
+  background: #050505;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(255, 166, 0, 0.08), transparent 34rem),
+    linear-gradient(180deg, #050505 0%, #0a0a0a 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(255, 183, 0, 0.08), transparent 38rem),
+    linear-gradient(180deg, rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(180deg, #050505 0%, #0a0a0a 100%);
+  background-size: auto, 18px 18px, 18px 18px, auto;
+}
+
+.texture-panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)),
+    linear-gradient(180deg, rgba(255, 179, 0, 0.06), rgba(0,0,0,0));
+}
+
+.steel-card {
+  background:
+    linear-gradient(180deg, rgba(21, 21, 21, 0.98), rgba(9, 9, 9, 0.96)),
+    linear-gradient(120deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+  border: 1px solid rgba(255, 191, 36, 0.16);
+  box-shadow:
+    0 0 0 1px rgba(255, 191, 36, 0.04),
+    inset 0 0 0 1px rgba(255,255,255,0.03),
+    0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.patch-card-active {
+  background:
+    radial-gradient(circle at top, rgba(255, 183, 0, 0.14), transparent 20rem),
+    linear-gradient(180deg, rgba(24, 24, 24, 0.98), rgba(10, 10, 10, 0.98));
+  border: 1px solid rgba(255, 191, 36, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(255, 191, 36, 0.09),
+    0 0 40px rgba(255, 174, 0, 0.12),
+    inset 0 0 30px rgba(255, 174, 0, 0.05);
+}
+
+.patch-card-inactive {
+  background: linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(8, 8, 8, 0.98));
+  border: 1px solid rgba(82, 82, 91, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(113, 113, 122, 0.05),
+    inset 0 0 24px rgba(255,255,255,0.02);
+}
+
+.warning-stripes {
+  background:
+    repeating-linear-gradient(
+      -55deg,
+      rgba(255, 184, 0, 0.22) 0px,
+      rgba(255, 184, 0, 0.22) 10px,
+      rgba(0,0,0,0) 10px,
+      rgba(0,0,0,0) 20px
+    );
+}
+
+.neon-text {
+  text-shadow:
+    0 0 10px rgba(255, 196, 0, 0.52),
+    0 0 22px rgba(255, 196, 0, 0.18);
+}
+
+.rough-title {
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.bottom-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* v1.3 — Estrada Premium */
+::selection {
+  background: rgba(251, 191, 36, 0.9);
+  color: #050505;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+.route-banner,
+.hero-member-card {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(251, 191, 36, 0.11), transparent 15rem),
+    linear-gradient(180deg, rgba(20,20,20,0.98), rgba(5,5,5,0.98));
+  box-shadow: 0 18px 50px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+.road-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 32%, rgba(255, 188, 0, 0.16), transparent 12rem),
+    linear-gradient(180deg, #141414 0%, #070707 55%, #020202 100%);
+}
+
+.road-scene-compact {
+  background:
+    radial-gradient(circle at 68% 40%, rgba(255, 188, 0, 0.12), transparent 9rem),
+    linear-gradient(180deg, #101010 0%, #040404 100%);
+}
+
+.road-glow {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  width: 90%;
+  height: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(251,191,36,0.09), transparent 68%);
+  filter: blur(24px);
+}
+
+.road-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 43%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(251,191,36,0.5), transparent);
+  box-shadow: 0 0 18px rgba(251,191,36,0.25);
+}
+
+.road-lane {
+  position: absolute;
+  bottom: -14%;
+  width: 34%;
+  height: 72%;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0));
+}
+
+.road-lane-left {
+  left: 10%;
+  transform: perspective(480px) rotateX(58deg) rotateZ(9deg);
+  border-left: 2px solid rgba(251,191,36,0.18);
+}
+
+.road-lane-right {
+  right: 10%;
+  transform: perspective(480px) rotateX(58deg) rotateZ(-9deg);
+  border-right: 2px solid rgba(251,191,36,0.18);
+}
+
+.road-centerline {
+  position: absolute;
+  left: calc(50% - 2px);
+  top: 48%;
+  width: 4px;
+  height: 68%;
+  transform-origin: top;
+  transform: perspective(300px) rotateX(52deg);
+  background: repeating-linear-gradient(180deg, rgba(251,191,36,0.7) 0 18px, transparent 18px 40px);
+  animation: roadFlow 1.6s linear infinite;
+}
+
+.road-bike-mark {
+  position: absolute;
+  right: 12%;
+  bottom: 15%;
+  color: rgba(251,191,36,0.35);
+  filter: drop-shadow(0 0 14px rgba(251,191,36,0.15));
+}
+
+.road-stat {
+  position: absolute;
+  bottom: 10%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  color: rgba(255,255,255,0.34);
+}
+
+.road-stat-left { left: 7%; }
+.road-stat-right { right: 7%; }
+
+.digital-patch {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2.25rem;
+  padding-bottom: 2.25rem;
+  isolation: isolate;
+}
+
+.digital-patch::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 4px),
+    radial-gradient(circle at 50% 25%, rgba(255,255,255,0.025), transparent 28rem);
+  mix-blend-mode: screen;
+}
+
+.digital-patch-active {
+  background:
+    radial-gradient(circle at 50% 25%, rgba(251,191,36,0.12), transparent 18rem),
+    linear-gradient(180deg, #151515 0%, #080808 70%, #030303 100%);
+  border: 1px solid rgba(251,191,36,0.34);
+  box-shadow: 0 0 0 1px rgba(251,191,36,0.06), 0 26px 58px rgba(0,0,0,0.5), inset 0 0 40px rgba(251,191,36,0.04);
+}
+
+.digital-patch-inactive {
+  background: linear-gradient(180deg, #121212 0%, #050505 100%);
+  border: 1px solid rgba(113,113,122,0.35);
+  filter: saturate(0.35);
+  box-shadow: 0 22px 50px rgba(0,0,0,0.5);
+}
+
+.patch-rocker {
+  position: absolute;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 78%;
+  min-height: 38px;
+  transform: translateX(-50%);
+  background: #080808;
+  border: 1px solid rgba(251,191,36,0.32);
+  color: #fbbf24;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  text-align: center;
+  box-shadow: 0 0 18px rgba(0,0,0,0.75), inset 0 0 12px rgba(251,191,36,0.03);
+}
+
+.patch-rocker-top {
+  top: 10px;
+  border-radius: 70% 70% 22% 22% / 72% 72% 28% 28%;
+}
+
+.patch-rocker-bottom {
+  bottom: 9px;
+  border-radius: 22% 22% 70% 70% / 28% 28% 72% 72%;
+}
+
+.patch-rivet {
+  position: absolute;
+  z-index: 6;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #f5f5f5, #71717a 30%, #27272a 72%);
+  box-shadow: 0 1px 3px #000;
+}
+
+.patch-rivet-tl { top: 18px; left: 18px; }
+.patch-rivet-tr { top: 18px; right: 18px; }
+.patch-rivet-bl { bottom: 18px; left: 18px; }
+.patch-rivet-br { bottom: 18px; right: 18px; }
+
+.patch-aura {
+  position: absolute;
+  inset: 18% 15%;
+  border-radius: 50%;
+  background: rgba(251,191,36,0.08);
+  filter: blur(24px);
+  animation: patchPulse 2.8s ease-in-out infinite;
+}
+
+.patch-motto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: rgba(251,191,36,0.7);
+}
+
+.patch-motto i {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(251,191,36,0.6);
+}
+
+.qr-frame {
+  position: relative;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(251,191,36,0.75), 0 0 28px rgba(251,191,36,0.22);
+}
+
+.qr-frame::before,
+.qr-frame::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  border: 1px solid rgba(251,191,36,0.16);
+  border-radius: 1.9rem;
+}
+
+.dock-shell {
+  border: 1px solid rgba(251,191,36,0.14);
+  border-radius: 1.85rem;
+  background: rgba(3,3,3,0.94);
+  box-shadow: 0 16px 42px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.035);
+  backdrop-filter: blur(22px);
+}
+
+@keyframes roadFlow {
+  from { background-position-y: 0; }
+  to { background-position-y: 40px; }
+}
+
+@keyframes patchPulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

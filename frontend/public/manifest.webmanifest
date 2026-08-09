@@ -1,0 +1,12 @@
+{
+  "name": "Irmãos do Asfalto — Clube de Benefícios",
+  "short_name": "Irmãos do Asfalto",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "description": "Escudo Digital e benefícios do Motoclube Irmãos do Asfalto",
+  "icons": [
+    { "src": "/motoclube-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
