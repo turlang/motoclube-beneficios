@@ -4,6 +4,7 @@ import {
   createServiceSchema,
   getFleetOverview,
   getMyMotorcycle,
+  listMaintenancePartners,
   updateMotorcycleProfileSchema,
   updateMyMotorcycle,
   updateMyReminder,
@@ -19,6 +20,7 @@ export const motorcycleAdminRouter = Router();
 
 motorcycleRouter.use(requireAuth);
 motorcycleRouter.get("/me", asyncHandler(getMyMotorcycle));
+motorcycleRouter.get("/partners", asyncHandler(listMaintenancePartners));
 motorcycleRouter.patch("/me", validate(updateMotorcycleProfileSchema), asyncHandler(updateMyMotorcycle));
 motorcycleRouter.patch("/me/reminders/:key", validate(updateReminderSchema), asyncHandler(updateMyReminder));
 motorcycleRouter.post("/me/services", validate(createServiceSchema), asyncHandler(createMyService));
