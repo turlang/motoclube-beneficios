@@ -15,7 +15,8 @@ import { api } from "../services/api.js";
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
-  const isActive = user.statusAssinatura === "ativo";
+  const isCandidate = user.patente === "Candidato";
+  const isActive = user.statusAssinatura === "ativo" && !isCandidate;
   const isDiretoria = user.patente === "Diretoria";
   const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("motoclube_active_tab") || "escudo");
   const [qr, setQr] = useState(null);
@@ -33,6 +34,9 @@ export function DashboardPage() {
   const [communicationsError, setCommunicationsError] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingAckCount, setPendingAckCount] = useState(0);
+  const [journey, setJourney] = useState(null);
+  const [journeyLoading, setJourneyLoading] = useState(false);
+  const [journeyError, setJourneyError] = useState("");
   const [adminOverview, setAdminOverview] = useState(null);
   const [adminMembers, setAdminMembers] = useState([]);
   const [adminPartners, setAdminPartners] = useState([]);
@@ -42,7 +46,7 @@ export function DashboardPage() {
   useEffect(() => { sessionStorage.setItem("motoclube_active_tab", activeTab); window.scrollTo({ top: 0, behavior: "smooth" }); }, [activeTab]);
 
   const loadQr = useCallback(async () => {
-    if (!isActive) { setQr(null); return; }
+    if (!isActive) { setQr(null); setQrError(""); return; }
     setLoadingQr(true); setQrError("");
     try { setQr(await api("/api/qr/me")); }
     catch (error) { setQr(null); setQrError(error.message); }
@@ -110,6 +114,20 @@ export function DashboardPage() {
     await loadCommunications();
   }
 
+  const loadJourney = useCallback(async () => {
+    setJourneyLoading(true); setJourneyError("");
+    try {
+      const data = await api("/api/journey/me");
+      setJourney(data.journey || null);
+    } catch (error) {
+      setJourneyError(error.message);
+    } finally {
+      setJourneyLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { if (activeTab === "perfil") loadJourney(); }, [activeTab, loadJourney]);
+
   const loadAdminData = useCallback(async () => {
     if (!isDiretoria) return;
     setAdminLoading(true);
@@ -155,7 +173,7 @@ export function DashboardPage() {
             <div><p>SEDE DIGITAL</p><h1>IRMÃOS DO ASFALTO</h1></div>
           </div>
           <div className="mc-member-chip">
-            <span className={isActive ? "is-active" : "is-inactive"}>{isActive ? "ESCUDO ATIVO" : "ESCUDO SUSPENSO"}</span>
+            <span className={isActive ? "is-active" : "is-inactive"}>{isCandidate ? "EM AVALIAÇÃO" : isActive ? "ESCUDO ATIVO" : "ESCUDO SUSPENSO"}</span>
             <div><b>{user.apelidoEstrada}</b><small>{user.patente}</small></div>
           </div>
           <div className="mc-app-actions">
@@ -173,7 +191,7 @@ export function DashboardPage() {
           {activeTab === "carteira" && <ClubeTab isActive={isActive} events={clubEvents} loading={eventsLoading} error={eventsError} onRsvp={updateRsvp} isDiretoria={isDiretoria} onEventsRefresh={loadClubEvents} />}
           {activeTab === "mural" && <MuralTab announcements={announcements} loading={communicationsLoading} error={communicationsError} unreadCount={unreadCount} pendingAckCount={pendingAckCount} onRead={markAnnouncementRead} onAck={acknowledgeAnnouncement} />}
           {activeTab === "sos" && <SosTab />}
-          {activeTab === "perfil" && <PerfilTab user={user} />}
+          {activeTab === "perfil" && <PerfilTab user={user} journey={journey} journeyLoading={journeyLoading} journeyError={journeyError} />}
           {activeTab === "diretoria" && isDiretoria && <DiretoriaTab overview={adminOverview} members={adminMembers} partners={adminPartners} clubContent={clubContent} loading={adminLoading} onUpdateMember={updateMember} onRefresh={loadAdminData} />}
         </div>
       </div>
