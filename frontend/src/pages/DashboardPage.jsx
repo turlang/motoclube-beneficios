@@ -5,7 +5,7 @@ import { BrandCrest } from "../components/BrandCrest.jsx";
 import { HeroBanner } from "../components/dashboard/HeroBanner.jsx";
 import { EscudoTab } from "../components/dashboard/EscudoTab.jsx";
 import { BeneficiosTab } from "../components/dashboard/BeneficiosTab.jsx";
-import { CarteiraTab } from "../components/dashboard/CarteiraTab.jsx";
+import { ClubeTab } from "../components/dashboard/ClubeTab.jsx";
 import { SosTab } from "../components/dashboard/SosTab.jsx";
 import { PerfilTab } from "../components/dashboard/PerfilTab.jsx";
 import { DiretoriaTab } from "../components/dashboard/DiretoriaTab.jsx";
@@ -24,6 +24,9 @@ export function DashboardPage() {
   const [benefits, setBenefits] = useState([]);
   const [benefitsLoading, setBenefitsLoading] = useState(false);
   const [benefitsError, setBenefitsError] = useState("");
+  const [clubEvents, setClubEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState("");
   const [adminOverview, setAdminOverview] = useState(null);
   const [adminMembers, setAdminMembers] = useState([]);
   const [adminPartners, setAdminPartners] = useState([]);
@@ -51,6 +54,25 @@ export function DashboardPage() {
     setBenefitsLoading(true); setBenefitsError("");
     api("/api/benefits").then((data) => setBenefits(data.benefits || [])).catch((error) => setBenefitsError(error.message)).finally(() => setBenefitsLoading(false));
   }, [activeTab, benefits.length]);
+
+  const loadClubEvents = useCallback(async () => {
+    setEventsLoading(true); setEventsError("");
+    try {
+      const data = await api("/api/events");
+      setClubEvents(data.events || []);
+    } catch (error) {
+      setEventsError(error.message);
+    } finally {
+      setEventsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { if (activeTab === "carteira") loadClubEvents(); }, [activeTab, loadClubEvents]);
+
+  async function updateRsvp(eventId, status) {
+    await api(`/api/events/${eventId}/rsvp`, { method: "POST", body: JSON.stringify({ status }) });
+    await loadClubEvents();
+  }
 
   const loadAdminData = useCallback(async () => {
     if (!isDiretoria) return;
@@ -108,7 +130,7 @@ export function DashboardPage() {
         <div className="mc-app-tabstage">
           {activeTab === "escudo" && <EscudoTab user={user} isActive={isActive} qr={qr} loadingQr={loadingQr} qrError={qrError} secondsRemaining={secondsRemaining} onRefresh={loadQr} />}
           {activeTab === "beneficios" && <BeneficiosTab benefits={benefits} loading={benefitsLoading} error={benefitsError} />}
-          {activeTab === "carteira" && <CarteiraTab isActive={isActive} />}
+          {activeTab === "carteira" && <ClubeTab isActive={isActive} events={clubEvents} loading={eventsLoading} error={eventsError} onRsvp={updateRsvp} isDiretoria={isDiretoria} onEventsRefresh={loadClubEvents} />}
           {activeTab === "sos" && <SosTab />}
           {activeTab === "perfil" && <PerfilTab user={user} />}
           {activeTab === "diretoria" && isDiretoria && <DiretoriaTab overview={adminOverview} members={adminMembers} partners={adminPartners} clubContent={clubContent} loading={adminLoading} onUpdateMember={updateMember} onRefresh={loadAdminData} />}

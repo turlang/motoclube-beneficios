@@ -9,6 +9,7 @@ import "./mc-institutional.css";
 import "./mc-app.css";
 import "./mc-content.css";
 import "./mc-territory.css";
+import "./mc-events.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

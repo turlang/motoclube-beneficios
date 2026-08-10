@@ -1,10 +1,10 @@
-import { Ambulance, BadgePercent, Crown, Shield, UserRound, WalletCards } from "lucide-react";
+import { Ambulance, BadgePercent, CalendarDays, Crown, Shield, UserRound } from "lucide-react";
 
 const tabs = [
   { key: "escudo", label: "Escudo", icon: Shield },
   { key: "beneficios", label: "Rota", icon: BadgePercent },
   { key: "sos", label: "SOS", icon: Ambulance, featured: true },
-  { key: "carteira", label: "Clube", icon: WalletCards },
+  { key: "carteira", label: "Clube", icon: CalendarDays },
   { key: "perfil", label: "Perfil", icon: UserRound }
 ];
 

@@ -11,6 +11,7 @@ import { paymentRouter } from "./routes/paymentRoutes.js";
 import { benefitRouter } from "./routes/benefitRoutes.js";
 import { partnerAuthRouter } from "./routes/partnerAuthRoutes.js";
 import { clubRouter } from "./routes/clubRoutes.js";
+import { eventAdminRouter, eventRouter } from "./routes/eventRoutes.js";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 
 export const app = express();
@@ -61,10 +62,12 @@ app.get("/health", (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/club", clubRouter);
+app.use("/api/events", eventRouter);
 app.use("/api/benefits", benefitRouter);
 app.use("/api/partner/auth", partnerAuthRouter);
 app.use("/api/qr", qrRouter);
 app.use("/api/partner", partnerRouter);
+app.use("/api/admin/events", eventAdminRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/payments", paymentRouter);
 
