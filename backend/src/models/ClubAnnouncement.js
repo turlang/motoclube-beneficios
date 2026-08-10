@@ -21,6 +21,8 @@ const clubAnnouncementSchema = new mongoose.Schema(
 );
 
 clubAnnouncementSchema.index({ ativo: 1, publishedAt: -1, expiresAt: 1 });
-clubAnnouncementSchema.index({ targetAll: 1, patentes: 1, chapters: 1 });
+clubAnnouncementSchema.index({ targetAll: 1 });
+clubAnnouncementSchema.index({ patentes: 1 });
+clubAnnouncementSchema.index({ chapters: 1 });
 
 export const ClubAnnouncement = mongoose.model("ClubAnnouncement", clubAnnouncementSchema);
