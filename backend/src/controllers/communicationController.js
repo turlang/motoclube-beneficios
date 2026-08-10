@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ClubAnnouncement } from "../models/ClubAnnouncement.js";
 import { AnnouncementReceipt } from "../models/AnnouncementReceipt.js";
 
-const patents = ["Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
+const patents = ["Candidato", "Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
 const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, "ID inválido");
 const blank = z.object({}).passthrough();
 const blankBody = z.object({}).passthrough().optional().default({});
@@ -13,7 +13,7 @@ const announcementBase = z.object({
   tipo: z.enum(["aviso", "comunicado", "convocacao"]),
   prioridade: z.enum(["normal", "importante", "urgente"]),
   targetAll: z.boolean(),
-  patentes: z.array(z.enum(patents)).max(4),
+  patentes: z.array(z.enum(patents)).max(5),
   chapters: z.array(objectIdSchema).max(100),
   publishedAt: z.coerce.date(),
   expiresAt: z.union([z.coerce.date(), z.null()]),
