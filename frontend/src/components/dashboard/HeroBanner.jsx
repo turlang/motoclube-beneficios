@@ -7,15 +7,16 @@ const labels = {
   escudo: ["ESCUDO DA IRMANDADE", "Sua identidade de estrada e validação em tempo real."],
   beneficios: ["PARCEIROS DE ESTRADA", "Benefícios escolhidos para a rotina sobre duas rodas."],
   sos: ["REDE DE APOIO", "Quando a estrada aperta, a irmandade precisa estar perto."],
-  carteira: ["VIDA NO CLUBE", "Eventos, rotas e confirmações da sua caminhada."],
-  mural: ["MURAL DA IRMANDADE", "Avisos, convocações e comunicados oficiais da Diretoria."],
-  perfil: ["FICHA DO IRMÃO", "Patente, moto e identidade dentro da irmandade."],
-  diretoria: ["COMANDO DA IRMANDADE", "Membros, parceiros e operação da sede digital."]
+  carteira: ["VIDA NO CLUBE", "Encontros, rotas e registros da caminhada coletiva."],
+  mural: ["VOZ DA DIRETORIA", "Comunicados, convocações e avisos oficiais da irmandade."],
+  perfil: ["JORNADA DO INTEGRANTE", "Patente, padrinho, requisitos e história dentro da irmandade."],
+  diretoria: ["COMANDO DA IRMANDADE", "Membros, progressão, parceiros e operação da sede digital."]
 };
 
 export function HeroBanner({ user, activeTab }) {
   const [title, subtitle] = labels[activeTab] || labels.escudo;
-  const active = user.statusAssinatura === "ativo";
+  const candidate = user.patente === "Candidato";
+  const active = user.statusAssinatura === "ativo" && !candidate;
 
   return (
     <section className="mc-member-hero">
@@ -27,7 +28,7 @@ export function HeroBanner({ user, activeTab }) {
         <span>{subtitle}</span>
         <div className="mc-member-hero-status">
           {active ? <BadgeCheck /> : <ShieldAlert />}
-          <b>{active ? "ESCUDO LIBERADO" : "ESCUDO SUSPENSO"}</b>
+          <b>{candidate ? "JORNADA EM AVALIAÇÃO" : active ? "ESCUDO LIBERADO" : "ESCUDO SUSPENSO"}</b>
           <i />
           <small>PATENTE {user.patente}</small>
         </div>
