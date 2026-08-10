@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { BadgeCheck, Bike, CalendarDays, CheckCircle2, Clock3, MapPin, Route, ShieldCheck, UsersRound, XCircle } from "lucide-react";
 import { SectionHeader } from "./DashboardUI.jsx";
 import { EventRouteManager } from "./EventRouteManager.jsx";
+import { FinancePanel } from "./FinancePanel.jsx";
 
 export function ClubeTab({ isActive, events, loading, error, onRsvp, isDiretoria, onEventsRefresh }) {
   const [busyId, setBusyId] = useState("");
@@ -74,6 +75,8 @@ export function ClubeTab({ isActive, events, loading, error, onRsvp, isDiretoria
       )}
 
       {isDiretoria && <EventRouteManager onEventsRefresh={onEventsRefresh} />}
+
+      <FinancePanel />
 
       <section className="mc-club-membership-card">
         <div><Bike /><p>VIDA NO CLUBE</p></div>
