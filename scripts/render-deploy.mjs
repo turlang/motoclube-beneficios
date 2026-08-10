@@ -5,15 +5,17 @@ const REPO = "https://github.com/turlang/motoclube-beneficios";
 const BRANCH = "main";
 const API_NAME = "motoclube-beneficios-api";
 const WEB_NAME = "motoclube-beneficios-web";
-const REGION = process.env.RENDER_REGION || "virginia";
+const REGION = (process.env.RENDER_REGION || "virginia").trim();
 
-function required(name) {
-  const value = process.env[name];
-  if (!value) throw new Error(`Variável obrigatória ausente: ${name}`);
+function required(name, { removeAllWhitespace = false } = {}) {
+  const raw = process.env[name];
+  if (!raw) throw new Error(`Variável obrigatória ausente: ${name}`);
+  const value = removeAllWhitespace ? raw.replace(/\s+/g, "") : raw.trim();
+  if (!value) throw new Error(`Variável obrigatória vazia: ${name}`);
   return value;
 }
 
-const RENDER_API_KEY = required("RENDER_API_KEY");
+const RENDER_API_KEY = required("RENDER_API_KEY", { removeAllWhitespace: true });
 const MONGODB_URI = required("MONGODB_URI");
 
 async function render(path, options = {}) {
@@ -64,7 +66,7 @@ function serviceUrl(service, fallbackName) {
 }
 
 async function getWorkspaceId() {
-  if (process.env.RENDER_OWNER_ID) return process.env.RENDER_OWNER_ID;
+  if (process.env.RENDER_OWNER_ID?.trim()) return process.env.RENDER_OWNER_ID.trim();
 
   const result = await render("/owners?limit=20");
   const owners = (Array.isArray(result) ? result : [])
