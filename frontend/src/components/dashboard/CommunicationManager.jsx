@@ -17,7 +17,7 @@ const EMPTY = {
   ativo: true
 };
 
-const PATENTS = ["Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
+const PATENTS = ["Candidato", "Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
 
 export function CommunicationManager({ chapters = [] }) {
   const [items, setItems] = useState([]);
