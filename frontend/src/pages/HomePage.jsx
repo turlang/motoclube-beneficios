@@ -3,7 +3,6 @@ import {
   ArrowRight,
   BadgeCheck,
   Bike,
-  CalendarDays,
   ChevronRight,
   Clock3,
   Crown,
@@ -13,11 +12,12 @@ import {
   Route,
   ShieldCheck,
   Siren,
-  UsersRound,
   Wrench
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { BrandCrest } from "../components/BrandCrest.jsx";
+import { ClubMediaGallery } from "../components/ClubMediaGallery.jsx";
+import { ClubPresenceSection } from "../components/ClubPresenceSection.jsx";
 import { api } from "../services/api.js";
 
 const PHOTOS = {
@@ -39,7 +39,11 @@ const FALLBACK = {
     manifesto: "Honra para representar o escudo. Respeito por quem divide a estrada. Responsabilidade em cada decisão. Irmandade para que ninguém caminhe sozinho.",
     heroImageUrl: PHOTOS.hero
   },
-  officers: [], events: [], posts: []
+  officers: [],
+  events: [],
+  posts: [],
+  chapters: [],
+  media: []
 };
 
 const principles = [
@@ -64,7 +68,9 @@ export function HomePage() {
         profile: data.profile || FALLBACK.profile,
         officers: data.officers || [],
         events: data.events || [],
-        posts: data.posts || []
+        posts: data.posts || [],
+        chapters: data.chapters || [],
+        media: data.media || []
       }))
       .catch(() => setClub(FALLBACK));
   }, []);
@@ -81,7 +87,12 @@ export function HomePage() {
             <div className="leading-none"><p className="mc-brand-small">MOTOCLUBE</p><p className="mc-brand-name">{profile.nome}</p></div>
           </a>
           <nav className="mc-desktop-nav" aria-label="Navegação institucional">
-            <a href="#historia">História</a><a href="#principios">Princípios</a><a href="#comando">Comando</a><a href="#agenda">Agenda</a><a href="#diario">Notícias</a><a href="#beneficios">Benefícios</a>
+            <a href="#historia">História</a>
+            <a href="#comando">Comando</a>
+            <a href="#agenda">Agenda</a>
+            <a href="#presenca">Núcleos</a>
+            <a href="#galeria">Galeria</a>
+            <a href="#diario">Notícias</a>
           </nav>
           <div className="flex items-center gap-2"><Link to="/login" className="mc-login-link">Área do associado</Link><Link to="/cadastro" className="mc-header-cta">Fazer parte</Link></div>
         </div>
@@ -97,11 +108,11 @@ export function HomePage() {
           <div className="order-1 max-w-4xl md:order-2 md:justify-self-end">
             <p className="mc-eyebrow"><Bike className="h-4 w-4" /> RESPEITO • IRMANDADE • ESTRADA</p>
             <h1 className="mc-hero-title">{profile.headline.split(".")[0] || "A ESTRADA NOS UNE"}.<br /><span>O CLUBE VIVE ALÉM DO ASFALTO.</span></h1>
-            <p className="mc-hero-copy">Um motoclube com identidade, história, comando, encontros, parceiros e uma sede digital construída para fortalecer quem veste o mesmo escudo.</p>
+            <p className="mc-hero-copy">Um motoclube com identidade, história, comando, encontros, presença territorial, memória visual e uma sede digital construída para fortalecer quem veste o mesmo escudo.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link to="/cadastro" className="mc-primary-button">QUERO FAZER PARTE <ArrowRight className="h-4 w-4" /></Link><a href="#historia" className="mc-outline-button">CONHEÇA NOSSA HISTÓRIA</a></div>
           </div>
         </div>
-        <div className="mc-hero-strip"><div><ShieldCheck /> Escudo e identidade</div><div><Handshake /> Irmandade</div><div><Route /> Rotas e encontros</div><div><Siren /> Rede de apoio</div></div>
+        <div className="mc-hero-strip"><div><ShieldCheck /> Escudo e identidade</div><div><Handshake /> Irmandade</div><div><Route /> Núcleos e encontros</div><div><Siren /> Rede de apoio</div></div>
       </section>
 
       <ClubDivider label="NOSSA HISTÓRIA" />
@@ -129,7 +140,7 @@ export function HomePage() {
 
       <section id="comando" className="mc-section mc-command-section">
         <div className="mx-auto max-w-[1380px] px-4 md:px-7">
-          <div className="mc-command-heading"><SectionHeading eyebrow="QUEM CONDUZ" title="O COMANDO REPRESENTA O ESCUDO." /><p>Uma estrutura clara dá rosto, responsabilidade e referência à irmandade. A Diretoria pode atualizar estes perfis diretamente pela sede digital.</p></div>
+          <div className="mc-command-heading"><SectionHeading eyebrow="QUEM CONDUZ" title="O COMANDO REPRESENTA O ESCUDO." /><p>Uma estrutura clara dá rosto, responsabilidade e referência à irmandade.</p></div>
           <div className="mc-command-grid">
             {(club.officers.length ? club.officers : fallbackOfficers()).map((officer) => <article key={officer._id || officer.cargo} className="mc-officer-card">
               <div className="mc-officer-photo">{officer.photoUrl ? <img src={officer.photoUrl} alt={officer.apelidoEstrada || officer.nome} loading="lazy" /> : <BrandCrest active compact />}</div>
@@ -146,12 +157,10 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mc-gallery-section">
-        <div className="mx-auto max-w-[1480px] px-4 py-16 md:px-7 md:py-24">
-          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><SectionHeading eyebrow="VIDA NA ESTRADA" title="O MOTOCLUBE PRECISA SER VISTO, NÃO SÓ EXPLICADO." /><p className="max-w-md text-sm leading-7 text-[#938b7e]">Estrada, encontros, máquinas e pessoas transformam a identidade do clube em memória.</p></div>
-          <div className="mc-gallery-grid"><figure className="mc-gallery-wide"><img src={PHOTOS.rain} alt="Motociclistas na estrada" loading="lazy" /><figcaption>FAÇA CHUVA OU FAÇA SOL</figcaption></figure><figure><img src={PHOTOS.road} alt="Motociclistas viajando juntos" loading="lazy" /><figcaption>ESTRADA & IRMANDADE</figcaption></figure><figure><img src={PHOTOS.urban} alt="Comboio de motociclistas" loading="lazy" /><figcaption>JUNTOS NA ROTA</figcaption></figure></div>
-        </div>
-      </section>
+      <ClubDivider label="PRESENÇA NA ESTRADA" />
+      <ClubPresenceSection chapters={club.chapters} />
+
+      <ClubMediaGallery media={club.media} />
 
       <section id="diario" className="mc-section mc-news-section">
         <div className="mx-auto max-w-[1380px] px-4 md:px-7">
