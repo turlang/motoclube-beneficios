@@ -58,8 +58,8 @@ const userSchema = new Schema(
     },
     patente: {
       type: String,
-      enum: ["Próspero", "Meio-Escudo", "Escudado", "Diretoria"],
-      default: "Próspero",
+      enum: ["Candidato", "Próspero", "Meio-Escudo", "Escudado", "Diretoria"],
+      default: "Candidato",
       index: true
     },
     statusAssinatura: {
