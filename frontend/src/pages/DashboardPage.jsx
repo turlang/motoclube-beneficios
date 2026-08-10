@@ -27,7 +27,7 @@ export function DashboardPage() {
   const [adminOverview, setAdminOverview] = useState(null);
   const [adminMembers, setAdminMembers] = useState([]);
   const [adminPartners, setAdminPartners] = useState([]);
-  const [clubContent, setClubContent] = useState({ profile: null, officers: [], events: [], posts: [] });
+  const [clubContent, setClubContent] = useState({ profile: null, officers: [], events: [], posts: [], chapters: [], media: [] });
   const [adminLoading, setAdminLoading] = useState(false);
 
   useEffect(() => { sessionStorage.setItem("motoclube_active_tab", activeTab); window.scrollTo({ top: 0, behavior: "smooth" }); }, [activeTab]);
@@ -69,7 +69,9 @@ export function DashboardPage() {
         profile: contentData.profile || null,
         officers: contentData.officers || [],
         events: contentData.events || [],
-        posts: contentData.posts || []
+        posts: contentData.posts || [],
+        chapters: contentData.chapters || [],
+        media: contentData.media || []
       });
     } finally { setAdminLoading(false); }
   }, [isDiretoria]);
