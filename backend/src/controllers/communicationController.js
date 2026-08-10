@@ -5,6 +5,7 @@ import { AnnouncementReceipt } from "../models/AnnouncementReceipt.js";
 const patents = ["Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
 const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, "ID inválido");
 const blank = z.object({}).passthrough();
+const blankBody = z.object({}).passthrough().optional().default({});
 
 const announcementBase = z.object({
   titulo: z.string().trim().min(3).max(180),
@@ -36,7 +37,7 @@ export const updateAnnouncementSchema = z.object({
 });
 
 export const announcementIdSchema = z.object({
-  body: blank,
+  body: blankBody,
   params: z.object({ id: objectIdSchema }),
   query: blank
 });
