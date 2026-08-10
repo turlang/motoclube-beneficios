@@ -1,4 +1,4 @@
-const CACHE_NAME = "irmaos-asfalto-shell-v3";
+const CACHE_NAME = "irmaos-asfalto-shell-v4";
 const APP_SHELL = ["/", "/offline.html", "/manifest.webmanifest", "/motoclube-icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -20,9 +20,7 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET" || url.pathname.startsWith("/api/") || url.pathname.includes("/qr/")) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request).catch(() => caches.match("/offline.html"))
-    );
+    event.respondWith(fetch(request).catch(() => caches.match("/offline.html")));
     return;
   }
 
