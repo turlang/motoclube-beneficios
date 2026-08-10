@@ -3,6 +3,7 @@ import { User } from "../models/User.js";
 import { ClubEvent } from "../models/ClubEvent.js";
 import { EventRsvp } from "../models/EventRsvp.js";
 import { MemberJourney } from "../models/MemberJourney.js";
+import { hasPendingRequiredDocuments } from "../services/documentService.js";
 import {
   ensureMemberJourney,
   journeyProgress,
@@ -59,9 +60,14 @@ async function participationCount(userId) {
 }
 
 async function syncAutomaticRequirements(journey, user) {
-  const participations = await participationCount(user._id);
+  const [participations, documentCompliance] = await Promise.all([
+    participationCount(user._id),
+    hasPendingRequiredDocuments(user)
+  ]);
+
   const automatic = {
     padrinho: Boolean(journey.padrinho),
+    documentos: !documentCompliance.pending,
     primeiro_encontro: participations >= 1,
     participacao: participations >= 3,
     presenca: participations >= 6
@@ -69,16 +75,24 @@ async function syncAutomaticRequirements(journey, user) {
 
   let changed = false;
   journey.requisitos.forEach((requirement) => {
-    if (automatic[requirement.key] && !requirement.completed) {
-      requirement.completed = true;
-      requirement.completedAt = new Date();
-      if (!requirement.notes) requirement.notes = "Concluído automaticamente pelo histórico registrado na sede digital.";
-      changed = true;
+    if (!Object.prototype.hasOwnProperty.call(automatic, requirement.key)) return;
+    const shouldBeCompleted = automatic[requirement.key];
+    if (requirement.completed === shouldBeCompleted) return;
+
+    requirement.completed = shouldBeCompleted;
+    requirement.completedAt = shouldBeCompleted ? new Date() : null;
+    if (requirement.key === "documentos") {
+      requirement.notes = shouldBeCompleted
+        ? "Todos os documentos obrigatórios vigentes foram aceitos."
+        : `${documentCompliance.count} documento(s) obrigatório(s) aguardando aceite.`;
+    } else if (shouldBeCompleted && !requirement.notes) {
+      requirement.notes = "Concluído automaticamente pelo histórico registrado na sede digital.";
     }
+    changed = true;
   });
 
   if (changed) await journey.save();
-  return participations;
+  return { participations, documentCompliance };
 }
 
 async function populatedJourney(journey) {
@@ -90,7 +104,7 @@ async function populatedJourney(journey) {
   return journey;
 }
 
-function serialize(journey, user, participations) {
+function serialize(journey, user, participations, documentCompliance) {
   const progress = journeyProgress(journey);
   const entryDate = new Date(journey.dataEntrada || user.createdAt || Date.now());
   const tenureDays = Math.max(0, Math.floor((Date.now() - entryDate.getTime()) / 86400000));
@@ -124,16 +138,17 @@ function serialize(journey, user, participations) {
     progress,
     metrics: {
       tenureDays,
-      participacoesRegistradas: participations
+      participacoesRegistradas: participations,
+      documentosObrigatoriosPendentes: documentCompliance.count
     }
   };
 }
 
 async function loadSnapshot(user) {
   const journey = await ensureMemberJourney(user);
-  const participations = await syncAutomaticRequirements(journey, user);
+  const { participations, documentCompliance } = await syncAutomaticRequirements(journey, user);
   await populatedJourney(journey);
-  return serialize(journey, user, participations);
+  return serialize(journey, user, participations, documentCompliance);
 }
 
 export async function getMyJourney(req, res) {
@@ -177,6 +192,9 @@ export async function updateRequirement(req, res) {
   const journey = await ensureMemberJourney(user);
   const requirement = journey.requisitos.find((item) => item.key === req.validated.params.key);
   if (!requirement) return res.status(404).json({ message: "Requisito não encontrado para a etapa atual." });
+  if (requirement.key === "documentos") {
+    return res.status(409).json({ message: "O requisito documental é controlado automaticamente pelos aceites das versões vigentes." });
+  }
 
   requirement.completed = req.validated.body.completed;
   requirement.completedAt = requirement.completed ? new Date() : null;
@@ -196,7 +214,11 @@ export async function promoteMember(req, res) {
   if (!nextPatent) return res.status(409).json({ message: "Não existe próxima patente automática para este membro." });
 
   const journey = await ensureMemberJourney(user);
-  const participations = await syncAutomaticRequirements(journey, user);
+  const { participations, documentCompliance } = await syncAutomaticRequirements(journey, user);
+  if (documentCompliance.pending) {
+    return res.status(409).json({ message: `Existem ${documentCompliance.count} documento(s) obrigatório(s) aguardando aceite. A promoção não pode ser concluída.` });
+  }
+
   const progress = journeyProgress(journey);
   if (!progress.ready && !req.validated.body.force) {
     return res.status(409).json({ message: "Ainda existem requisitos obrigatórios pendentes para esta promoção." });
@@ -225,7 +247,7 @@ export async function promoteMember(req, res) {
 
   return res.json({
     message: `${user.apelidoEstrada} avançou para ${nextPatent}.`,
-    journey: serialize(journey, user, participations)
+    journey: serialize(journey, user, participations, documentCompliance)
   });
 }
 
