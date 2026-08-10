@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
   adminOverview,
+  changeChapterSchema,
+  changeMemberChapter,
   changeMemberPatent,
   changeMemberStatus,
   changePatentSchema,
@@ -61,6 +63,7 @@ adminRouter.get("/members", asyncHandler(listMembers));
 adminRouter.get("/partners", asyncHandler(listPartners));
 adminRouter.patch("/members/:id/patente", validate(changePatentSchema), asyncHandler(changeMemberPatent));
 adminRouter.patch("/members/:id/status", validate(changeStatusSchema), asyncHandler(changeMemberStatus));
+adminRouter.patch("/members/:id/nucleo", validate(changeChapterSchema), asyncHandler(changeMemberChapter));
 adminRouter.post("/partners", validate(createPartnerSchema), asyncHandler(createPartner));
 adminRouter.post("/benefits", validate(createBenefitSchema), asyncHandler(createBenefit));
 
