@@ -27,6 +27,7 @@ export function DashboardPage() {
   const [adminOverview, setAdminOverview] = useState(null);
   const [adminMembers, setAdminMembers] = useState([]);
   const [adminPartners, setAdminPartners] = useState([]);
+  const [clubContent, setClubContent] = useState({ profile: null, officers: [], events: [], posts: [] });
   const [adminLoading, setAdminLoading] = useState(false);
 
   useEffect(() => { sessionStorage.setItem("motoclube_active_tab", activeTab); window.scrollTo({ top: 0, behavior: "smooth" }); }, [activeTab]);
@@ -55,8 +56,21 @@ export function DashboardPage() {
     if (!isDiretoria) return;
     setAdminLoading(true);
     try {
-      const [overviewData, membersData, partnersData] = await Promise.all([api("/api/admin/overview"), api("/api/admin/members"), api("/api/admin/partners")]);
-      setAdminOverview(overviewData.overview); setAdminMembers(membersData.members || []); setAdminPartners(partnersData.partners || []);
+      const [overviewData, membersData, partnersData, contentData] = await Promise.all([
+        api("/api/admin/overview"),
+        api("/api/admin/members"),
+        api("/api/admin/partners"),
+        api("/api/admin/club/content")
+      ]);
+      setAdminOverview(overviewData.overview);
+      setAdminMembers(membersData.members || []);
+      setAdminPartners(partnersData.partners || []);
+      setClubContent({
+        profile: contentData.profile || null,
+        officers: contentData.officers || [],
+        events: contentData.events || [],
+        posts: contentData.posts || []
+      });
     } finally { setAdminLoading(false); }
   }, [isDiretoria]);
 
@@ -74,17 +88,12 @@ export function DashboardPage() {
         <div className="mc-app-header-inner">
           <div className="mc-app-brand">
             <div className="mc-app-crest"><BrandCrest active={isActive} compact /></div>
-            <div>
-              <p>SEDE DIGITAL</p>
-              <h1>IRMÃOS DO ASFALTO</h1>
-            </div>
+            <div><p>SEDE DIGITAL</p><h1>IRMÃOS DO ASFALTO</h1></div>
           </div>
-
           <div className="mc-member-chip">
             <span className={isActive ? "is-active" : "is-inactive"}>{isActive ? "ESCUDO ATIVO" : "ESCUDO SUSPENSO"}</span>
             <div><b>{user.apelidoEstrada}</b><small>{user.patente}</small></div>
           </div>
-
           <div className="mc-app-actions">
             <button className="mc-icon-button" aria-label="Notificações"><Bell /></button>
             <button onClick={logout} className="mc-icon-button" aria-label="Sair"><LogOut /></button>
@@ -100,7 +109,7 @@ export function DashboardPage() {
           {activeTab === "carteira" && <CarteiraTab isActive={isActive} />}
           {activeTab === "sos" && <SosTab />}
           {activeTab === "perfil" && <PerfilTab user={user} />}
-          {activeTab === "diretoria" && isDiretoria && <DiretoriaTab overview={adminOverview} members={adminMembers} partners={adminPartners} loading={adminLoading} onUpdateMember={updateMember} onRefresh={loadAdminData} />}
+          {activeTab === "diretoria" && isDiretoria && <DiretoriaTab overview={adminOverview} members={adminMembers} partners={adminPartners} clubContent={clubContent} loading={adminLoading} onUpdateMember={updateMember} onRefresh={loadAdminData} />}
         </div>
       </div>
       <BottomDock activeTab={activeTab} onChange={setActiveTab} isDiretoria={isDiretoria} />
