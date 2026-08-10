@@ -1,4 +1,4 @@
-import { Bell, LogOut } from "lucide-react";
+import { Bell, FileText, LogOut } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BottomDock } from "../components/BottomDock.jsx";
 import { BrandCrest } from "../components/BrandCrest.jsx";
@@ -37,6 +37,10 @@ export function DashboardPage() {
   const [journey, setJourney] = useState(null);
   const [journeyLoading, setJourneyLoading] = useState(false);
   const [journeyError, setJourneyError] = useState("");
+  const [documents, setDocuments] = useState([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState("");
+  const [pendingRequiredCount, setPendingRequiredCount] = useState(0);
   const [adminOverview, setAdminOverview] = useState(null);
   const [adminMembers, setAdminMembers] = useState([]);
   const [adminPartners, setAdminPartners] = useState([]);
@@ -128,6 +132,33 @@ export function DashboardPage() {
 
   useEffect(() => { if (activeTab === "perfil") loadJourney(); }, [activeTab, loadJourney]);
 
+  const loadDocuments = useCallback(async () => {
+    setDocumentsLoading(true); setDocumentsError("");
+    try {
+      const data = await api("/api/documents");
+      setDocuments(data.documents || []);
+      setPendingRequiredCount(data.pendingRequiredCount || 0);
+    } catch (error) {
+      setDocumentsError(error.message);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadDocuments(); }, [loadDocuments]);
+
+  async function acceptDocument(id) {
+    setDocumentsLoading(true); setDocumentsError("");
+    try {
+      await api(`/api/documents/${id}/accept`, { method: "POST" });
+      await Promise.all([loadDocuments(), loadJourney(), loadQr()]);
+    } catch (error) {
+      setDocumentsError(error.message);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  }
+
   const loadAdminData = useCallback(async () => {
     if (!isDiretoria) return;
     setAdminLoading(true);
@@ -177,6 +208,7 @@ export function DashboardPage() {
             <div><b>{user.apelidoEstrada}</b><small>{user.patente}</small></div>
           </div>
           <div className="mc-app-actions">
+            <button onClick={() => setActiveTab("perfil")} className={pendingRequiredCount > 0 ? "mc-icon-button has-unread" : "mc-icon-button"} aria-label={`Documentos${pendingRequiredCount ? `, ${pendingRequiredCount} obrigatório(s) pendente(s)` : ""}`}><FileText />{pendingRequiredCount > 0 && <span className="mc-bell-badge">{pendingRequiredCount > 9 ? "9+" : pendingRequiredCount}</span>}</button>
             <button onClick={() => setActiveTab("mural")} className={unreadCount > 0 ? "mc-icon-button has-unread" : "mc-icon-button"} aria-label={`Comunicados${unreadCount ? `, ${unreadCount} não lidos` : ""}`}><Bell />{unreadCount > 0 && <span className="mc-bell-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}</button>
             <button onClick={logout} className="mc-icon-button" aria-label="Sair"><LogOut /></button>
           </div>
@@ -186,12 +218,12 @@ export function DashboardPage() {
       <div className="mc-app-main">
         <HeroBanner user={user} activeTab={activeTab} />
         <div className="mc-app-tabstage">
-          {activeTab === "escudo" && <EscudoTab user={user} isActive={isActive} qr={qr} loadingQr={loadingQr} qrError={qrError} secondsRemaining={secondsRemaining} onRefresh={loadQr} />}
+          {activeTab === "escudo" && <EscudoTab user={user} isActive={isActive} qr={qr} loadingQr={loadingQr} qrError={qrError} secondsRemaining={secondsRemaining} onRefresh={loadQr} onOpenDocuments={() => setActiveTab("perfil")} />}
           {activeTab === "beneficios" && <BeneficiosTab benefits={benefits} loading={benefitsLoading} error={benefitsError} />}
           {activeTab === "carteira" && <ClubeTab isActive={isActive} events={clubEvents} loading={eventsLoading} error={eventsError} onRsvp={updateRsvp} isDiretoria={isDiretoria} onEventsRefresh={loadClubEvents} />}
           {activeTab === "mural" && <MuralTab announcements={announcements} loading={communicationsLoading} error={communicationsError} unreadCount={unreadCount} pendingAckCount={pendingAckCount} onRead={markAnnouncementRead} onAck={acknowledgeAnnouncement} />}
           {activeTab === "sos" && <SosTab />}
-          {activeTab === "perfil" && <PerfilTab user={user} journey={journey} journeyLoading={journeyLoading} journeyError={journeyError} />}
+          {activeTab === "perfil" && <PerfilTab user={user} journey={journey} journeyLoading={journeyLoading} journeyError={journeyError} documents={documents} documentsLoading={documentsLoading} documentsError={documentsError} pendingRequiredCount={pendingRequiredCount} onAcceptDocument={acceptDocument} />}
           {activeTab === "diretoria" && isDiretoria && <DiretoriaTab overview={adminOverview} members={adminMembers} partners={adminPartners} clubContent={clubContent} loading={adminLoading} onUpdateMember={updateMember} onRefresh={loadAdminData} />}
         </div>
       </div>
