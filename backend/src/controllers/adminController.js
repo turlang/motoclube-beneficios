@@ -4,9 +4,10 @@ import { Partner } from "../models/Partner.js";
 import { Benefit } from "../models/Benefit.js";
 import { QrValidation } from "../models/QrValidation.js";
 import { ClubChapter } from "../models/ClubChapter.js";
+import { resetJourneyRequirementsForPatent } from "./journeyController.js";
 import { publicUser } from "../utils/publicUser.js";
 
-const patents = ["Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
+const patents = ["Candidato", "Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
 const categories = ["oficina", "posto", "lavagem", "pecas", "alimentacao", "saude", "outros"];
 const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, "ID inválido");
 
@@ -66,9 +67,17 @@ export const createBenefitSchema = z.object({
 export async function changeMemberPatent(req, res) {
   const { id } = req.validated.params;
   const { patente } = req.validated.body;
-  const user = await User.findByIdAndUpdate(id, { $set: { patente } }, { new: true, runValidators: true }).populate("nucleo", "nome cidade estado");
-  if (!user) return res.status(404).json({ message: "Membro não encontrado." });
-  return res.json({ message: "Patente atualizada.", user: publicUser(user) });
+
+  const existing = await User.findById(id);
+  if (!existing) return res.status(404).json({ message: "Membro não encontrado." });
+  const previousPatent = existing.patente;
+
+  existing.patente = patente;
+  await existing.save();
+  await resetJourneyRequirementsForPatent(existing._id, req.user._id, previousPatent, "Patente ajustada manualmente pela Diretoria.");
+  await existing.populate("nucleo", "nome cidade estado");
+
+  return res.json({ message: "Patente atualizada e registrada na jornada.", user: publicUser(existing) });
 }
 
 export async function changeMemberStatus(req, res) {
@@ -120,9 +129,10 @@ export async function listPartners(req, res) {
 }
 
 export async function adminOverview(req, res) {
-  const [totalMembers, activeMembers, partners, benefits, validationsToday] = await Promise.all([
+  const [totalMembers, activeMembers, candidates, partners, benefits, validationsToday] = await Promise.all([
     User.countDocuments(),
     User.countDocuments({ statusAssinatura: "ativo" }),
+    User.countDocuments({ patente: "Candidato" }),
     Partner.countDocuments({ ativo: true }),
     Benefit.countDocuments({ ativo: true }),
     QrValidation.countDocuments({
@@ -131,7 +141,7 @@ export async function adminOverview(req, res) {
     })
   ]);
 
-  return res.json({ overview: { totalMembers, activeMembers, partners, benefits, validationsToday } });
+  return res.json({ overview: { totalMembers, activeMembers, candidates, partners, benefits, validationsToday } });
 }
 
 export async function createPartner(req, res) {
