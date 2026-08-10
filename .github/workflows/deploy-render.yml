@@ -1,0 +1,101 @@
+name: Deploy Render Free
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "render.yaml"
+      - "scripts/render-deploy.mjs"
+      - ".github/workflows/deploy-render.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: motoclube-render-production
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Validate backend syntax
+        working-directory: backend
+        run: |
+          find src scripts -type f -name "*.js" -print0 | xargs -0 -n1 node --check
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: https://motoclube-beneficios-api.onrender.com
+        run: npm run build
+
+  deploy:
+    name: Deploy to Render Free
+    needs: validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Create or update Render services
+        id: render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          RENDER_REGION: virginia
+          GITHUB_SHA: ${{ github.sha }}
+        run: node scripts/render-deploy.mjs
+
+      - name: Seed initial Diretoria and partner
+        working-directory: backend
+        env:
+          NODE_ENV: development
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          FRONTEND_URL: ${{ steps.render.outputs.web_url }}
+          JWT_SECRET: seed-only-not-used-by-server
+          QR_HMAC_SECRET: seed-only-not-used-by-server
+          PAYMENT_WEBHOOK_SECRET: seed-only-not-used-by-server
+          DEMO_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          DEMO_PARTNER_PASSWORD: ${{ secrets.PARTNER_DEMO_PASSWORD }}
+          ALLOW_DEMO_SEED: "false"
+        run: |
+          npm install
+          npm run seed:demo
+
+      - name: Deployment summary
+        run: |
+          echo "## Irmãos do Asfalto — deploy concluído" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- API: ${{ steps.render.outputs.api_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Frontend: ${{ steps.render.outputs.web_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Plano da API: Free" >> "$GITHUB_STEP_SUMMARY"
+          echo "- MongoDB: Atlas existente" >> "$GITHUB_STEP_SUMMARY"
