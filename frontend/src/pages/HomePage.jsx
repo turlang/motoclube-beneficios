@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowLeft,
   ArrowRight,
   BadgeCheck,
   Bike,
-  ChevronRight,
   Clock3,
   Crown,
-  Handshake,
   MapPin,
-  MapPinned,
   Route,
   ShieldCheck,
   Siren,
@@ -16,14 +14,12 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { BrandCrest } from "../components/BrandCrest.jsx";
-import { ClubMediaGallery } from "../components/ClubMediaGallery.jsx";
-import { ClubPresenceSection } from "../components/ClubPresenceSection.jsx";
 import { api } from "../services/api.js";
 
 const PHOTOS = {
   hero: "https://images.pexels.com/photos/9789339/pexels-photo-9789339.jpeg?auto=compress&cs=tinysrgb&w=2200",
-  rain: "https://images.pexels.com/photos/5195487/pexels-photo-5195487.jpeg?auto=compress&cs=tinysrgb&w=1400",
-  road: "https://images.pexels.com/photos/12202235/pexels-photo-12202235.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  rain: "https://images.pexels.com/photos/5195487/pexels-photo-5195487.jpeg?auto=compress&cs=tinysrgb&w=1500",
+  road: "https://images.pexels.com/photos/12202235/pexels-photo-12202235.jpeg?auto=compress&cs=tinysrgb&w=1500"
 };
 
 const FALLBACK = {
@@ -34,209 +30,188 @@ const FALLBACK = {
     cidade: "São Paulo",
     estado: "SP",
     headline: "A estrada nos une. O escudo nos representa.",
-    historia: "O Irmãos do Asfalto nasce para reunir motociclistas em torno de respeito, convivência, responsabilidade e apoio. Mais do que um clube de benefícios, a proposta é construir uma irmandade com presença real na estrada e uma sede digital capaz de organizar membros, parceiros, encontros e a memória do clube.",
-    manifesto: "Honra para representar o escudo. Respeito por quem divide a estrada. Responsabilidade em cada decisão. Irmandade para que ninguém caminhe sozinho.",
+    historia: "O Irmãos do Asfalto nasce da vontade de rodar junto, criar vínculos e construir uma irmandade que exista de verdade fora da tela.",
+    manifesto: "A palavra vale. Ninguém fica para trás. O escudo vem depois da convivência.",
     heroImageUrl: PHOTOS.hero
   },
-  officers: [],
-  events: [],
-  posts: [],
-  chapters: [],
-  media: []
+  officers: [], events: [], posts: [], chapters: [], media: []
 };
 
-const principles = [
-  ["01", "RESPEITO", "Cumprimentar quem chega, ouvir quem conhece a estrada e não usar o escudo para passar por cima de ninguém."],
-  ["02", "IRMANDADE", "Rodar junto também é esperar no acostamento, voltar para buscar e não deixar ninguém para trás."],
-  ["03", "RESPONSABILIDADE", "Moto em ordem, palavra cumprida e cabeça no lugar. Quem representa o clube responde pelo que faz."],
-  ["04", "APOIO", "Quando aperta, a primeira pergunta não é ‘de quem é o problema?’. É ‘como a gente resolve?’."]
+const SCREENS = [
+  ["inicio", "Início"], ["historia", "História"], ["base", "Nossa base"],
+  ["comando", "Comando"], ["agenda", "Agenda"], ["nucleos", "Núcleos"],
+  ["memoria", "Memória"], ["diario", "Diário"], ["sede", "Sede digital"]
 ];
 
-const roadBenefits = [
-  { icon: Wrench, title: "Oficina & pneu", text: "Manutenção, pneus, óleo, elétrica e reparos em parceiros credenciados." },
-  { icon: MapPinned, title: "Parceiros da estrada", text: "Postos, alimentação, peças, lavagem e pontos de apoio reunidos no mesmo ecossistema." },
-  { icon: Siren, title: "Rede de apoio", text: "SOS e canais do clube acessíveis dentro da sede digital do associado." }
+const PRINCIPLES = [
+  ["01", "Respeito", "Na estrada, a gente espera. Na sede, a gente escuta. Respeito vem antes do colete."],
+  ["02", "Palavra", "Combinou, cumpre. Se não der, avisa. Confiança se constrói no detalhe."],
+  ["03", "Responsa", "Moto em ordem, cabeça no lugar e consciência de quem está rodando ao lado."],
+  ["04", "Irmandade", "Quando um para, ninguém simplesmente segue viagem. Esse é o ponto."]
+];
+
+const BENEFITS = [
+  [Wrench, "Oficina & pneu", "Parceiros para manutenção e reparos."],
+  [Route, "Estrada", "Agenda, briefing e confirmação de presença."],
+  [Siren, "Apoio", "SOS e canais da irmandade no mesmo lugar."]
 ];
 
 export function HomePage() {
   const [club, setClub] = useState(FALLBACK);
+  const [active, setActive] = useState(0);
+  const touchStart = useRef(null);
 
   useEffect(() => {
     api("/api/club/home")
       .then((data) => setClub({
         profile: data.profile || FALLBACK.profile,
-        officers: data.officers || [],
-        events: data.events || [],
-        posts: data.posts || [],
-        chapters: data.chapters || [],
-        media: data.media || []
+        officers: data.officers || [], events: data.events || [], posts: data.posts || [],
+        chapters: data.chapters || [], media: data.media || []
       }))
       .catch(() => setClub(FALLBACK));
   }, []);
 
+  useEffect(() => {
+    const onKey = (event) => {
+      if (["ArrowRight", "PageDown"].includes(event.key)) setActive((value) => Math.min(SCREENS.length - 1, value + 1));
+      if (["ArrowLeft", "PageUp"].includes(event.key)) setActive((value) => Math.max(0, value - 1));
+      if (event.key === "Home") setActive(0);
+      if (event.key === "End") setActive(SCREENS.length - 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const profile = club.profile || FALLBACK.profile;
   const heroImage = profile.heroImageUrl || PHOTOS.hero;
+  const officers = useMemo(() => (club.officers.length ? club.officers : fallbackOfficers()).slice(0, 3), [club.officers]);
+  const events = useMemo(() => (club.events.length ? club.events : fallbackEvents()).slice(0, 3), [club.events]);
+  const posts = useMemo(() => (club.posts.length ? club.posts : fallbackPosts()).slice(0, 3), [club.posts]);
+  const chapters = club.chapters.filter((item) => item.ativo !== false).slice(0, 5);
+  const media = (club.media.length ? club.media : fallbackMedia()).slice(0, 5);
+
+  const go = (index) => setActive(Math.max(0, Math.min(SCREENS.length - 1, index)));
+
+  function onTouchStart(event) { touchStart.current = event.touches[0]?.clientX ?? null; }
+  function onTouchEnd(event) {
+    if (touchStart.current == null) return;
+    const delta = (event.changedTouches[0]?.clientX ?? touchStart.current) - touchStart.current;
+    if (Math.abs(delta) > 55) go(active + (delta < 0 ? 1 : -1));
+    touchStart.current = null;
+  }
 
   return (
-    <main className="mc-site min-h-screen text-[#eee2ce]">
-      <header className="mc-topbar sticky top-0 z-40">
-        <div className="mc-header-inner mx-auto flex max-w-[1380px] items-center justify-between gap-4 px-4 md:px-7">
-          <a href="#inicio" className="mc-brand-lockup">
-            <div className="mc-header-crest"><BrandCrest active compact /></div>
-            <div className="mc-brand-copy"><p className="mc-brand-small">MOTOCLUBE</p><p className="mc-brand-name">{profile.nome}</p><small>{profile.cidade}{profile.estado ? ` • ${profile.estado}` : ""}</small></div>
-          </a>
-          <nav className="mc-desktop-nav" aria-label="Navegação institucional">
-            <a href="#historia">História</a>
-            <a href="#comando">Comando</a>
-            <a href="#agenda">Agenda</a>
-            <a href="#presenca">Núcleos</a>
-            <a href="#galeria">Galeria</a>
-            <a href="#diario">Notícias</a>
-          </nav>
-          <div className="flex items-center gap-2"><Link to="/login" className="mc-login-link">Área do associado</Link><Link to="/cadastro" className="mc-header-cta">Chegar junto</Link></div>
-        </div>
+    <main className="mc-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <header className="mc-stage-header">
+        <button type="button" className="mc-stage-brand" onClick={() => go(0)}>
+          <span><BrandCrest active compact /></span>
+          <div><b>{profile.nome}</b><small>{profile.cidade} {profile.estado ? `• ${profile.estado}` : ""}</small></div>
+        </button>
+
+        <nav className="mc-stage-menu" aria-label="Capítulos do site">
+          {SCREENS.map(([id, label], index) => (
+            <button key={id} type="button" className={active === index ? "is-active" : ""} onClick={() => go(index)}>{label}</button>
+          ))}
+        </nav>
+
+        <div className="mc-stage-account"><Link to="/login">Associado</Link><Link to="/cadastro">Fazer parte</Link></div>
       </header>
 
-      <section id="inicio" className="mc-hero">
-        <img src={heroImage} alt="Motociclistas reunidos na estrada" className="mc-hero-photo" fetchPriority="high" />
-        <div className="mc-hero-overlay" /><div className="mc-hero-grain" /><div className="mc-hero-ghost">MOTOCLUBE</div>
-        <div className="relative z-10 mx-auto grid min-h-[calc(100vh-82px)] max-w-[1380px] items-center gap-8 px-4 py-12 md:grid-cols-[.68fr_1.32fr] md:px-7">
-          <div className="order-2 md:order-1">
-            <div className="mc-hero-emblem"><BrandCrest active size="large" /><div className="mc-emblem-rocker mc-emblem-rocker-top">{profile.nome.toUpperCase()}</div><div className="mc-emblem-rocker mc-emblem-rocker-bottom">{profile.estado || "BRASIL"} • {profile.sigla || "MC"}</div></div>
-          </div>
-          <div className="order-1 max-w-4xl md:order-2 md:justify-self-end">
-            <p className="mc-eyebrow"><Bike className="h-4 w-4" /> RESPEITO • IRMANDADE • ESTRADA</p>
-            <h1 className="mc-hero-title">{profile.headline.split(".")[0] || "A ESTRADA NOS UNE"}.<br /><span>O RESTO A GENTE CONSTRÓI JUNTO.</span></h1>
-            <p className="mc-hero-copy">A gente se encontra na estrada, se reconhece pelo escudo e usa a sede digital só para facilitar o que já acontece fora da tela.</p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row"><Link to="/cadastro" className="mc-primary-button">QUERO CONHECER O CLUBE <ArrowRight className="h-4 w-4" /></Link><a href="#historia" className="mc-outline-button">VER NOSSA HISTÓRIA</a></div>
-            <div className="mc-hero-note"><span>{profile.cidade}{profile.estado ? ` • ${profile.estado}` : ""}</span><p>Sem pose. Sem pressa. Primeiro a convivência, depois o colete.</p></div>
-          </div>
-        </div>
-        <div className="mc-hero-strip"><div><ShieldCheck /> Escudo e identidade</div><div><Handshake /> Irmandade</div><div><Route /> Núcleos e encontros</div><div><Siren /> Rede de apoio</div></div>
-      </section>
-
-      <ClubDivider label="NOSSA HISTÓRIA" />
-
-      <section id="historia" className="mc-section mc-section-dark mc-history-section">
-        <div className="mx-auto grid max-w-[1320px] gap-10 px-4 md:grid-cols-[1.08fr_.92fr] md:items-center md:px-7">
-          <div className="mc-history-photo"><img src={PHOTOS.road} alt="Grupo de motociclistas na estrada" loading="lazy" /><div className="mc-history-stamp">DESDE<br />{profile.foundedYear || "—"}</div><span className="mc-photo-caption-human">registro de estrada • arquivo do clube</span></div>
-          <div>
-            <SectionHeading eyebrow="O MOTOCLUBE" title="A GENTE NÃO INVENTA HISTÓRIA. A GENTE ACUMULA QUILÔMETROS." />
-            <p className="mc-lead">{profile.historia}</p>
-            <blockquote className="mc-history-manifesto">{profile.manifesto}</blockquote>
-            <div className="mc-history-meta"><span><MapPin /> {profile.cidade}{profile.estado ? ` • ${profile.estado}` : ""}</span><span><Crown /> {profile.sigla || "MC"}</span></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="principios" className="mc-section mc-principles-section mc-principles-human">
-        <div className="mx-auto max-w-[1320px] px-4 md:px-7">
-          <div className="mc-principles-editorial">
-            <div className="mc-principles-intro">
-              <p className="mc-section-eyebrow">NOSSA BASE</p>
-              <h2>O QUE A GENTE LEVA<br /><span>ANTES DE LIGAR A MOTO.</span></h2>
-              <p>Não é slogan para preencher página. É o combinado que precisa funcionar quando ninguém está olhando.</p>
-              <div className="mc-margin-note"><b>NOTA DE ESTRADA</b><span>“O escudo só faz sentido quando quem veste faz por merecer.”</span><small>— regra simples da casa</small></div>
+      <div className="mc-stage-body" aria-live="polite">
+        {active === 0 && (
+          <Screen className="mc-screen-hero" image={heroImage}>
+            <div className="mc-stage-hero-crest"><BrandCrest active size="large" /></div>
+            <div className="mc-stage-hero-copy">
+              <p className="mc-stage-kicker"><Bike /> RESPEITO • PALAVRA • ESTRADA</p>
+              <h1>{firstSentence(profile.headline)}<span>O resto a gente constrói junto.</span></h1>
+              <p>Um motoclube para quem entende que rodar junto é mais do que aparecer na mesma foto.</p>
+              <div className="mc-stage-actions"><button onClick={() => go(1)}>Conheça o clube <ArrowRight /></button><Link to="/cadastro">Quero fazer parte</Link></div>
+              <aside>“Sem pose. Sem pressa. Primeiro a convivência, depois o colete.”</aside>
             </div>
-            <div className="mc-principles-rail">
-              {principles.map(([number, title, text], index) => <article key={number} className={`mc-principle-card mc-principle-human p-${index + 1}`}><span className="mc-principle-number">{number}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}
+          </Screen>
+        )}
+
+        {active === 1 && (
+          <Screen className="mc-screen-history">
+            <figure className="mc-stage-photo"><img src={PHOTOS.road} alt="Motociclistas na estrada" /><figcaption>Arquivo de estrada • {profile.cidade || "sede"}</figcaption><b>{profile.foundedYear || "—"}</b></figure>
+            <div className="mc-stage-editorial">
+              <p className="mc-stage-kicker">NOSSA HISTÓRIA</p>
+              <h2>A gente não inventa história.<br /><em>A gente acumula quilômetros.</em></h2>
+              <p className="mc-stage-lead">{profile.historia}</p>
+              <blockquote>{profile.manifesto}</blockquote>
+              <div className="mc-stage-signature"><Crown /> {profile.sigla || "MC"} • {profile.cidade} {profile.estado || ""}</div>
             </div>
-          </div>
-        </div>
-      </section>
+          </Screen>
+        )}
 
-      <ClubDivider label="COMANDO & RESPONSABILIDADE" />
+        {active === 2 && (
+          <Screen className="mc-screen-principles">
+            <div className="mc-principles-intro"><p className="mc-stage-kicker">NOSSA BASE</p><h2>Quatro coisas que<br />a gente leva a sério.</h2><p>Não são palavras para preencher parede. São coisas simples que aparecem quando a estrada aperta.</p><aside>Nota de estrada<br /><b>Ninguém ganha respeito só porque veste um patch.</b></aside></div>
+            <div className="mc-principles-human">{PRINCIPLES.map(([n, title, text], index) => <article key={n} className={index % 2 ? "is-offset" : ""}><span>{n}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
+          </Screen>
+        )}
 
-      <section id="comando" className="mc-section mc-command-section">
-        <div className="mx-auto max-w-[1320px] px-4 md:px-7">
-          <div className="mc-command-heading"><SectionHeading eyebrow="QUEM CONDUZ" title="QUEM PUXA A FILA TAMBÉM RESPONDE POR ELA." /><p>Nome, função e presença. Sem cargo decorativo: quem está no comando precisa ser encontrado quando o clube precisa.</p></div>
-          <div className="mc-command-grid">
-            {(club.officers.length ? club.officers : fallbackOfficers()).map((officer) => <article key={officer._id || officer.cargo} className="mc-officer-card">
-              <div className="mc-officer-photo">{officer.photoUrl ? <img src={officer.photoUrl} alt={officer.apelidoEstrada || officer.nome} loading="lazy" /> : <BrandCrest active compact />}</div>
-              <div className="mc-officer-copy"><p>{officer.cargo}</p><h3>{officer.apelidoEstrada || officer.nome}</h3><span>{officer.patente || "Diretoria"}</span><small>{officer.bio || "Responsável por representar a Diretoria e manter o clube organizado."}</small></div>
-            </article>)}
-          </div>
-        </div>
-      </section>
+        {active === 3 && (
+          <Screen className="mc-screen-command">
+            <div className="mc-stage-topline"><div><p className="mc-stage-kicker">QUEM PUXA A FILA</p><h2>Comando também é responsabilidade.</h2></div><p>Quem representa o escudo responde pelas decisões e pela forma como o clube é conduzido.</p></div>
+            <div className="mc-command-compact">{officers.map((officer, index) => <article key={officer._id || index}><div className="mc-command-photo">{officer.photoUrl ? <img src={officer.photoUrl} alt={officer.apelidoEstrada || officer.nome} /> : <BrandCrest active compact />}</div><span>0{index + 1} • {officer.cargo}</span><h3>{officer.apelidoEstrada || officer.nome}</h3><p>{officer.bio || "Diretoria do motoclube."}</p></article>)}</div>
+          </Screen>
+        )}
 
-      <section id="agenda" className="mc-section mc-agenda-section">
-        <div className="mx-auto grid max-w-[1320px] gap-10 px-4 md:grid-cols-[.72fr_1.28fr] md:px-7">
-          <div><SectionHeading eyebrow="AGENDA DE ESTRADA" title="PRÓXIMA SAÍDA TEM HORA, PONTO E ROTA." /><p className="mc-body-copy">Nada de agenda só para enfeitar site. Aqui entram os encontros que realmente precisam de presença, briefing e ponto de encontro.</p></div>
-          <div className="mc-event-list">{(club.events.length ? club.events : fallbackEvents()).slice(0, 5).map((event) => <article key={event._id || event.titulo} className="mc-event-row"><div className="mc-event-date"><strong>{datePart(event.data, "day")}</strong><span>{datePart(event.data, "month")}</span></div><div className="mc-event-copy"><p>{event.tipo || "encontro"}</p><h3>{event.titulo}</h3><span><Clock3 /> {formatDateTime(event.data)}</span><span><MapPin /> {[event.local, event.cidade].filter(Boolean).join(" • ") || "Local a definir"}</span><small>{event.descricao}</small></div>{event.destaque && <b>NA AGENDA</b>}</article>)}</div>
-        </div>
-      </section>
+        {active === 4 && (
+          <Screen className="mc-screen-agenda">
+            <div className="mc-agenda-intro"><p className="mc-stage-kicker">AGENDA DE ESTRADA</p><h2>Próxima saída tem hora, ponto e rota.</h2><p>A sede digital organiza. O encontro acontece do lado de fora.</p></div>
+            <div className="mc-agenda-compact">{events.map((event, index) => <article key={event._id || index}><div className="mc-date-block"><b>{datePart(event.data, "day")}</b><span>{datePart(event.data, "month")}</span></div><div><small>{event.tipo || "encontro"}</small><h3>{event.titulo}</h3><p><Clock3 /> {formatDateTime(event.data)}</p><p><MapPin /> {[event.local, event.cidade].filter(Boolean).join(" • ") || "Ponto a definir"}</p><em>{event.descricao}</em></div></article>)}</div>
+          </Screen>
+        )}
 
-      <ClubDivider label="PRESENÇA NA ESTRADA" />
-      <ClubPresenceSection chapters={club.chapters} />
+        {active === 5 && (
+          <Screen className="mc-screen-chapters">
+            <div className="mc-chapters-copy"><p className="mc-stage-kicker">NÚCLEOS</p><h2>Um escudo.<br />Várias estradas.</h2><p>{chapters.length || 0} núcleo(s) ativo(s). Presença local, responsabilidade local.</p><div className="mc-route-line" /></div>
+            <div className="mc-chapter-compact">{chapters.length ? chapters.map((chapter, index) => <article key={chapter._id || index}><span>{String(index + 1).padStart(2, "0")}</span><div><small>{chapter.estado} • {chapter.regiao || "NÚCLEO"}</small><h3>{chapter.nome}</h3><p><MapPin /> {chapter.cidade}{chapter.responsavel ? ` • ${chapter.responsavel}` : ""}</p></div>{chapter.destaque && <b>SEDE</b>}</article>) : <div className="mc-stage-empty"><BrandCrest active compact /><p>O primeiro núcleo aparecerá aqui quando a Diretoria cadastrá-lo.</p></div>}</div>
+          </Screen>
+        )}
 
-      <ClubMediaGallery media={club.media} />
+        {active === 6 && (
+          <Screen className="mc-screen-memory">
+            <div className="mc-stage-topline"><div><p className="mc-stage-kicker">MEMÓRIA</p><h2>Quilômetros que viram história.</h2></div><p>Menos banco de imagem. Mais registro de quem realmente estava lá.</p></div>
+            <div className="mc-memory-compact">{media.map((item, index) => <figure key={item._id || index} className={index === 0 ? "is-main" : ""}><img src={item.imageUrl || PHOTOS.hero} alt={item.titulo || "Registro do clube"} /><figcaption><span>{String(index + 1).padStart(2, "0")} • {item.categoria || "estrada"}</span><b>{item.titulo || "Registro de estrada"}</b>{item.local && <small>{item.local}</small>}</figcaption></figure>)}</div>
+          </Screen>
+        )}
 
-      <section id="diario" className="mc-section mc-news-section">
-        <div className="mx-auto max-w-[1320px] px-4 md:px-7">
-          <div className="mc-news-heading"><SectionHeading eyebrow="DIÁRIO DE ESTRADA" title="O QUE FICOU DA ÚLTIMA ROTA. O QUE VEM AGORA." /><p>Relatos, avisos, fotos e histórias publicadas pela própria Diretoria. Menos texto institucional; mais memória do que realmente aconteceu.</p></div>
-          <div className="mc-news-grid">{(club.posts.length ? club.posts : fallbackPosts()).slice(0, 6).map((post, index) => <article key={post._id || post.titulo} className={index === 0 ? "mc-news-card is-featured" : "mc-news-card"}>{post.imageUrl && <img src={post.imageUrl} alt="" loading="lazy" />}<div><p>{post.categoria || "notícia"} • {formatDate(post.publishedAt)}</p><h3>{post.titulo}</h3><span>{post.resumo}</span>{post.destaque && <b>EM DESTAQUE</b>}</div></article>)}</div>
-        </div>
-      </section>
+        {active === 7 && (
+          <Screen className="mc-screen-journal">
+            <div className="mc-journal-intro"><p className="mc-stage-kicker">DIÁRIO DE ESTRADA</p><h2>O que aconteceu.<br />O que vem pela frente.</h2><p>Notícia de clube precisa ter data, lugar e gente envolvida — não texto para preencher seção.</p></div>
+            <div className="mc-journal-compact">{posts.map((post, index) => <article key={post._id || index}>{post.imageUrl && <img src={post.imageUrl} alt="" />}<div><small>{post.categoria || "notícia"} • {formatDate(post.publishedAt)}</small><h3>{post.titulo}</h3><p>{post.resumo}</p></div></article>)}</div>
+          </Screen>
+        )}
 
-      <ClubDivider label="A SEDE DIGITAL" />
+        {active === 8 && (
+          <Screen className="mc-screen-digital">
+            <div className="mc-digital-compact"><div className="mc-digital-patch"><BrandCrest active size="large" /><small>ESCUDO DIGITAL</small><h3>FALCÃO</h3><p>ESCUDADO</p><span><BadgeCheck /> ESCUDO LIBERADO</span></div></div>
+            <div className="mc-digital-copy"><p className="mc-stage-kicker">SEDE DIGITAL</p><h2>A tecnologia fica no bolso.<br /><em>O clube continua na estrada.</em></h2><p>Escudo, agenda, parceiros, comunicação, garagem e financeiro sem transformar a irmandade num aplicativo genérico.</p><div className="mc-benefits-compact">{BENEFITS.map(([Icon, title, text]) => <div key={title}><Icon /><span><b>{title}</b><small>{text}</small></span></div>)}</div><Link to="/login" className="mc-stage-login">Abrir minha sede <ArrowRight /></Link></div>
+          </Screen>
+        )}
+      </div>
 
-      <section id="beneficios" className="mc-section mc-digital-section">
-        <div className="mx-auto grid max-w-[1320px] gap-10 px-4 md:grid-cols-[.9fr_1.1fr] md:items-center md:px-7">
-          <div className="mc-digital-crest-panel"><div className="mc-digital-patch"><div className="mc-patch-rocker">{profile.nome.toUpperCase()}</div><BrandCrest active size="large" /><p className="mc-card-kicker">ESCUDO DIGITAL DO ASSOCIADO</p><h3>FALCÃO</h3><p className="mc-digital-rank">ESCUDADO</p><div className="mc-digital-status"><BadgeCheck className="h-4 w-4" /> ESCUDO LIBERADO</div></div></div>
-          <div><SectionHeading eyebrow="CLUBE DE BENEFÍCIOS" title="O CLUBE CABE NO CELULAR. MAS NÃO NASCEU LÁ." /><p className="mc-body-copy">QR, benefícios, agenda, documentos, garagem e avisos ficam no bolso. O vínculo continua sendo construído no encontro, na rota e na convivência.</p><div className="mt-7 grid gap-3">{roadBenefits.map(({ icon: Icon, title, text }) => <div key={title} className="mc-benefit-line"><Icon /><div><h3>{title}</h3><p>{text}</p></div></div>)}</div><Link to="/login" className="mc-text-link mt-7">ABRIR MINHA SEDE DIGITAL <ChevronRight className="h-4 w-4" /></Link></div>
-        </div>
-      </section>
-
-      <section className="mc-closing-section"><div /><div className="relative z-10 mx-auto max-w-[960px] px-4 py-20 md:py-24"><div className="mc-closing-lockup"><div className="w-32"><BrandCrest active compact /></div><div><p className="mc-section-eyebrow">IRMÃOS DO ASFALTO</p><h2>SE A IDEIA É RODAR JUNTO, A CONVERSA COMEÇA AQUI.</h2><p>Conheça o clube, apareça nos encontros e entenda o que o escudo representa antes de pedir para vestir.</p><Link to="/cadastro" className="mc-primary-button mt-6">QUERO CONHECER O CLUBE <ArrowRight className="h-4 w-4" /></Link></div></div></div></section>
+      <footer className="mc-stage-controls">
+        <button type="button" onClick={() => go(active - 1)} disabled={active === 0} aria-label="Tela anterior"><ArrowLeft /></button>
+        <div><b>{String(active + 1).padStart(2, "0")}</b><span>/ {String(SCREENS.length).padStart(2, "0")}</span><em>{SCREENS[active][1]}</em></div>
+        <div className="mc-stage-dots">{SCREENS.map(([id], index) => <button key={id} aria-label={`Ir para ${SCREENS[index][1]}`} className={active === index ? "is-active" : ""} onClick={() => go(index)} />)}</div>
+        <button type="button" onClick={() => go(active + 1)} disabled={active === SCREENS.length - 1} aria-label="Próxima tela"><ArrowRight /></button>
+      </footer>
     </main>
   );
 }
 
-function SectionHeading({ eyebrow, title, center = false }) {
-  return <div className={center ? "text-center" : ""}><p className="mc-section-eyebrow">{eyebrow}</p><h2 className="mc-section-title">{title}</h2></div>;
+function Screen({ className = "", image, children }) {
+  return <section className={`mc-stage-screen ${className}`} style={image ? { "--screen-image": `url(${image})` } : undefined}>{children}</section>;
 }
-
-function ClubDivider({ label }) {
-  return <div className="mc-divider"><span /><strong>{label}</strong><span /></div>;
-}
-
-function datePart(value, part) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return part === "day" ? "--" : "---";
-  return part === "day" ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit" }).format(date) : new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(date).replace(".", "").toUpperCase();
-}
-
-function formatDateTime(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Data a definir";
-  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(date);
-}
-
-function formatDate(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(date);
-}
-
-function fallbackOfficers() {
-  return [
-    { cargo: "Presidência", apelidoEstrada: "Comandante", patente: "Diretoria", bio: "Direção institucional do motoclube." },
-    { cargo: "Direção de Estrada", apelidoEstrada: "Estradeiro", patente: "Diretoria", bio: "Organização de rotas e encontros." },
-    { cargo: "Relações e Apoio", apelidoEstrada: "Guardião", patente: "Diretoria", bio: "Integração de associados e parceiros." }
-  ];
-}
-
-function fallbackEvents() {
-  return [
-    { titulo: "Encontro da Irmandade", tipo: "encontro", data: new Date(Date.now() + 14 * 86400000).toISOString(), cidade: "São Paulo", descricao: "Integração dos membros e alinhamento da agenda do clube.", destaque: true },
-    { titulo: "Bate e volta da serra", tipo: "rota", data: new Date(Date.now() + 28 * 86400000).toISOString(), cidade: "São Paulo", descricao: "Rota organizada com briefing e pontos de parada." }
-  ];
-}
-
-function fallbackPosts() {
-  return [
-    { titulo: "O escudo vem antes do benefício", categoria: "comunidade", resumo: "Antes do desconto, vem a convivência. Antes do QR, vem o compromisso com quem roda ao lado.", imageUrl: PHOTOS.hero, publishedAt: new Date().toISOString(), destaque: true },
-    { titulo: "Antes de sair: cinco minutos na moto", categoria: "manutencao", resumo: "Pneu, corrente, luz e combustível. O básico que evita parar a turma inteira no acostamento.", imageUrl: PHOTOS.rain, publishedAt: new Date().toISOString() },
-    { titulo: "O que ficou da última estrada", categoria: "rota", resumo: "Fotos, histórias e pequenos detalhes que só quem estava lá lembra.", imageUrl: PHOTOS.road, publishedAt: new Date().toISOString() }
-  ];
-}
+function firstSentence(value) { return String(value || "A estrada nos une.").split(".")[0] + "."; }
+function datePart(value, part) { const date = new Date(value); if (Number.isNaN(date.getTime())) return part === "day" ? "--" : "---"; return part === "day" ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit" }).format(date) : new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(date).replace(".", "").toUpperCase(); }
+function formatDateTime(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? "Data a definir" : new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(date); }
+function formatDate(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(date); }
+function fallbackOfficers() { return [{ cargo: "Presidência", apelidoEstrada: "Comandante", bio: "Direção institucional e responsabilidade pelo escudo." }, { cargo: "Estrada", apelidoEstrada: "Estradeiro", bio: "Organiza rotas, briefings e segurança dos encontros." }, { cargo: "Apoio", apelidoEstrada: "Guardião", bio: "Cuida da integração entre irmãos, núcleos e parceiros." }]; }
+function fallbackEvents() { return [{ titulo: "Encontro da Irmandade", tipo: "encontro", data: new Date(Date.now() + 14 * 86400000).toISOString(), cidade: "São Paulo", descricao: "Conversa, alinhamento e estrada." }, { titulo: "Bate e volta da serra", tipo: "rota", data: new Date(Date.now() + 28 * 86400000).toISOString(), cidade: "São Paulo", descricao: "Saída com briefing e pontos de parada." }]; }
+function fallbackPosts() { return [{ titulo: "O escudo vem depois da convivência", categoria: "clube", resumo: "Pertencimento não começa no cadastro. Começa na presença.", imageUrl: PHOTOS.hero, publishedAt: new Date().toISOString() }, { titulo: "Antes da rota", categoria: "garagem", resumo: "Moto revisada, horário combinado e cabeça no lugar.", imageUrl: PHOTOS.rain, publishedAt: new Date().toISOString() }, { titulo: "Estrada também vira memória", categoria: "rota", resumo: "Cada encontro deixa histórias que merecem ser guardadas.", imageUrl: PHOTOS.road, publishedAt: new Date().toISOString() }]; }
+function fallbackMedia() { return [{ titulo: "Na estrada", categoria: "irmandade", imageUrl: PHOTOS.hero }, { titulo: "Faça chuva", categoria: "estrada", imageUrl: PHOTOS.rain }, { titulo: "Quilômetros juntos", categoria: "rota", imageUrl: PHOTOS.road }]; }
