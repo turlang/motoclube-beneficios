@@ -10,6 +10,7 @@ import { ClubEvent } from "../src/models/ClubEvent.js";
 import { ClubPost } from "../src/models/ClubPost.js";
 import { ClubChapter } from "../src/models/ClubChapter.js";
 import { ClubMedia } from "../src/models/ClubMedia.js";
+import { ClubAnnouncement } from "../src/models/ClubAnnouncement.js";
 
 const PHOTOS = {
   hero: "https://images.pexels.com/photos/9789339/pexels-photo-9789339.jpeg?auto=compress&cs=tinysrgb&w=2200",
@@ -63,7 +64,7 @@ async function ensureDemoPartner() {
   return partner;
 }
 
-async function ensureClubContent() {
+async function ensureClubContent(user) {
   await ClubProfile.findOneAndUpdate(
     { slug: "main" },
     { $setOnInsert: {
@@ -103,11 +104,16 @@ async function ensureClubContent() {
     await ClubPost.findOneAndUpdate({ titulo: post.titulo }, { $setOnInsert: { ...post, ativo: true } }, { upsert: true, new: true, runValidators: true });
   }
 
-  await ClubChapter.findOneAndUpdate(
+  const chapter = await ClubChapter.findOneAndUpdate(
     { nome: "Sede São Paulo" },
     { $setOnInsert: { nome: "Sede São Paulo", cidade: "São Paulo", estado: "SP", regiao: "Capital", responsavel: "Comandante", descricao: "Sede de referência institucional do Irmãos do Asfalto.", destaque: true, ordem: 1, ativo: true } },
     { upsert: true, new: true, runValidators: true }
   );
+
+  if (!user.nucleo) {
+    user.nucleo = chapter._id;
+    await user.save();
+  }
 
   const mediaItems = [
     { titulo: "Faça chuva ou faça sol", legenda: "A estrada muda. A irmandade permanece.", imageUrl: PHOTOS.rain, categoria: "estrada", local: "São Paulo", data: daysFromNow(-3), destaque: true, ordem: 1 },
@@ -117,6 +123,27 @@ async function ensureClubContent() {
   for (const mediaItem of mediaItems) {
     await ClubMedia.findOneAndUpdate({ titulo: mediaItem.titulo }, { $setOnInsert: { ...mediaItem, ativo: true } }, { upsert: true, new: true, runValidators: true });
   }
+
+  await ClubAnnouncement.findOneAndUpdate(
+    { titulo: "Bem-vindo ao Mural da Irmandade" },
+    {
+      $setOnInsert: {
+        titulo: "Bem-vindo ao Mural da Irmandade",
+        mensagem: "Este é o canal oficial de comunicação da Diretoria. Avisos, convocações, mudanças de rota e comunicados importantes passam a aparecer aqui. Quando um comunicado exigir ciência, confirme a leitura para que a Diretoria tenha o registro.",
+        tipo: "comunicado",
+        prioridade: "importante",
+        targetAll: true,
+        patentes: [],
+        chapters: [],
+        publishedAt: new Date(),
+        expiresAt: null,
+        requiresAck: true,
+        ativo: true,
+        createdBy: user._id
+      }
+    },
+    { upsert: true, new: true, runValidators: true }
+  );
 }
 
 async function main() {
@@ -127,12 +154,12 @@ async function main() {
   await connectDatabase();
   const user = await ensureDemoUser();
   const partner = await ensureDemoPartner();
-  await ensureClubContent();
+  await ensureClubContent(user);
 
   console.log("Seed concluído:");
   console.log(`- Diretoria: ${user.email}`);
   console.log(`- Parceiro: ${partner.email}`);
-  console.log("- Conteúdo institucional: perfil, comando, eventos, notícias, núcleo e galeria");
+  console.log("- Conteúdo institucional: perfil, comando, eventos, notícias, núcleo, galeria e mural");
 }
 
 main()
