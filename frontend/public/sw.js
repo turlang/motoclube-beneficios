@@ -1,4 +1,4 @@
-const CACHE_NAME = "irmaos-asfalto-shell-v1";
+const CACHE_NAME = "irmaos-asfalto-shell-v2";
 const APP_SHELL = ["/", "/offline.html", "/manifest.webmanifest", "/motoclube-icon.svg"];
 
 self.addEventListener("install", (event) => {
