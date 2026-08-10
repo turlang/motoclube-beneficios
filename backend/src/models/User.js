@@ -68,6 +68,12 @@ const userSchema = new Schema(
       default: "inativo",
       index: true
     },
+    nucleo: {
+      type: Schema.Types.ObjectId,
+      ref: "ClubChapter",
+      default: null,
+      index: true
+    },
     qrCodeToken: {
       type: String,
       required: true,
