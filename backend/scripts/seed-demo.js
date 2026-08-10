@@ -23,6 +23,21 @@ function daysFromNow(days) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 }
 
+async function ensureAnnouncementIndexes() {
+  const legacyIndex = "targetAll_1_patentes_1_chapters_1";
+  try {
+    const indexes = await ClubAnnouncement.collection.indexes();
+    if (indexes.some((index) => index.name === legacyIndex)) {
+      await ClubAnnouncement.collection.dropIndex(legacyIndex);
+      console.log(`[seed] índice legado removido: ${legacyIndex}`);
+    }
+  } catch (error) {
+    if (error?.codeName !== "NamespaceNotFound") throw error;
+  }
+
+  await ClubAnnouncement.syncIndexes();
+}
+
 async function ensureDemoUser() {
   const password = process.env.DEMO_ADMIN_PASSWORD;
   if (!password || password.length < 8) throw new Error("Defina DEMO_ADMIN_PASSWORD com pelo menos 8 caracteres.");
@@ -152,6 +167,7 @@ async function main() {
   }
 
   await connectDatabase();
+  await ensureAnnouncementIndexes();
   const user = await ensureDemoUser();
   const partner = await ensureDemoPartner();
   await ensureClubContent(user);
