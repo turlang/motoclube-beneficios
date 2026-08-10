@@ -11,6 +11,7 @@ import "./mc-content.css";
 import "./mc-territory.css";
 import "./mc-events.css";
 import "./mc-communications.css";
+import "./mc-journey.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
