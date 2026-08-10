@@ -4,6 +4,7 @@ import { api } from "../../services/api.js";
 import { AdminInput, SectionHeader, StatAdmin } from "./DashboardUI.jsx";
 import { ClubContentManager } from "./ClubContentManager.jsx";
 import { TerritoryMediaManager } from "./TerritoryMediaManager.jsx";
+import { CommunicationManager } from "./CommunicationManager.jsx";
 
 export function DiretoriaTab({ overview, members, partners, clubContent, loading, onUpdateMember, onRefresh }) {
   const [search, setSearch] = useState("");
@@ -17,10 +18,11 @@ export function DiretoriaTab({ overview, members, partners, clubContent, loading
     regras: [], destaque: true
   });
 
+  const chapters = clubContent?.chapters || [];
   const filteredMembers = members.filter((member) => {
     const term = search.trim().toLowerCase();
     if (!term) return true;
-    return [member.nome, member.apelidoEstrada, member.email].filter(Boolean).some((value) => value.toLowerCase().includes(term));
+    return [member.nome, member.apelidoEstrada, member.email, member.nucleo?.nome].filter(Boolean).some((value) => value.toLowerCase().includes(term));
   });
 
   async function submitPartner(event) {
@@ -57,6 +59,7 @@ export function DiretoriaTab({ overview, members, partners, clubContent, loading
         <StatAdmin title="Benefícios" value={overview?.benefits ?? "—"} icon={<Sparkles className="h-5 w-5" />} />
       </section>
 
+      <CommunicationManager chapters={chapters} />
       <ClubContentManager content={clubContent} onRefresh={onRefresh} />
       <TerritoryMediaManager content={clubContent} onRefresh={onRefresh} />
 
@@ -97,18 +100,19 @@ export function DiretoriaTab({ overview, members, partners, clubContent, loading
 
       <section className="steel-card rounded-[2rem] p-5">
         <div className="flex items-center justify-between gap-3">
-          <div><p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">Membros</p><h3 className="mt-1 text-lg font-black uppercase text-white">Patentes e assinatura</h3></div>
+          <div><p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">Membros</p><h3 className="mt-1 text-lg font-black uppercase text-white">Patentes, núcleo e assinatura</h3></div>
           {loading && <span className="text-xs text-zinc-600">Atualizando...</span>}
         </div>
 
-        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar nome, apelido ou e-mail" className="mt-4 h-12 w-full border border-zinc-800 bg-zinc-950 px-4 text-sm text-zinc-300 outline-none focus:border-amber-400/30" />
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar nome, apelido, e-mail ou núcleo" className="mt-4 h-12 w-full border border-zinc-800 bg-zinc-950 px-4 text-sm text-zinc-300 outline-none focus:border-amber-400/30" />
 
         <div className="mt-4 grid gap-3">
           {filteredMembers.slice(0, 30).map((member) => (
             <div key={member.id} className="border border-white/5 bg-black/25 p-4">
-              <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-black uppercase text-white">{member.apelidoEstrada}</p><p className="mt-1 text-xs text-zinc-600">{member.nome}</p></div><span className={member.statusAssinatura === "ativo" ? "text-xs font-black uppercase text-emerald-400" : "text-xs font-black uppercase text-red-400"}>{member.statusAssinatura}</span></div>
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-black uppercase text-white">{member.apelidoEstrada}</p><p className="mt-1 text-xs text-zinc-600">{member.nome}{member.nucleo?.nome ? ` • ${member.nucleo.nome}` : ""}</p></div><span className={member.statusAssinatura === "ativo" ? "text-xs font-black uppercase text-emerald-400" : "text-xs font-black uppercase text-red-400"}>{member.statusAssinatura}</span></div>
+              <div className="mt-3 grid gap-2 md:grid-cols-3">
                 <select value={member.patente} onChange={(event) => onUpdateMember(member.id, "patente", event.target.value)} className="h-11 border border-zinc-800 bg-zinc-950 px-3 text-xs font-bold text-zinc-300 outline-none"><option>Próspero</option><option>Meio-Escudo</option><option>Escudado</option><option>Diretoria</option></select>
+                <select value={member.nucleo?.id || ""} onChange={(event) => onUpdateMember(member.id, "nucleo", event.target.value || null)} className="h-11 border border-zinc-800 bg-zinc-950 px-3 text-xs font-bold text-zinc-300 outline-none"><option value="">Sem núcleo</option>{chapters.filter((chapter) => chapter.ativo !== false).map((chapter) => <option key={chapter._id} value={chapter._id}>{chapter.nome} • {chapter.estado}</option>)}</select>
                 <button type="button" onClick={() => onUpdateMember(member.id, "statusAssinatura", member.statusAssinatura === "ativo" ? "inativo" : "ativo")} className="h-11 border border-amber-400/20 bg-amber-400/10 px-3 text-xs font-black uppercase tracking-[0.12em] text-amber-300">{member.statusAssinatura === "ativo" ? "Suspender" : "Ativar"}</button>
               </div>
             </div>
