@@ -8,6 +8,12 @@ import {
 } from "../services/qrService.js";
 
 export async function getMyQr(req, res) {
+  if (req.user.patente === "Candidato") {
+    return res.status(403).json({
+      message: "Candidato em avaliação. O QR é liberado após a entrada como Próspero e assinatura ativa."
+    });
+  }
+
   if (req.user.statusAssinatura !== "ativo") {
     return res.status(403).json({
       message: "Assinatura inativa. QR Code indisponível."
@@ -15,13 +21,8 @@ export async function getMyQr(req, res) {
   }
 
   const userWithSecret = await User.findById(req.user._id).select("+qrCodeToken");
-
   const { token, expiresAt } = createDynamicQrToken(userWithSecret);
-
-  const qrPayload = JSON.stringify({
-    type: "motoclube-beneficio",
-    token
-  });
+  const qrPayload = JSON.stringify({ type: "motoclube-beneficio", token });
 
   const imageDataUrl = await QRCode.toDataURL(qrPayload, {
     errorCorrectionLevel: "M",
@@ -32,17 +33,13 @@ export async function getMyQr(req, res) {
   return res.json({
     token,
     expiresAt,
-    ttlSeconds: Math.max(
-      0,
-      expiresAt - Math.floor(Date.now() / 1000)
-    ),
+    ttlSeconds: Math.max(0, expiresAt - Math.floor(Date.now() / 1000)),
     imageDataUrl
   });
 }
 
 export async function validatePartnerQr(req, res) {
   const { token } = req.validated.body;
-
   let parsed;
 
   try {
@@ -54,10 +51,7 @@ export async function validatePartnerQr(req, res) {
       motivo: "invalid_token"
     });
 
-    return res.status(400).json({
-      valid: false,
-      reason: "invalid_token"
-    });
+    return res.status(400).json({ valid: false, reason: "invalid_token" });
   }
 
   const user = await User.findById(parsed.payload.uid).select("+qrCodeToken");
@@ -69,10 +63,7 @@ export async function validatePartnerQr(req, res) {
       motivo: "member_not_found"
     });
 
-    return res.status(404).json({
-      valid: false,
-      reason: "member_not_found"
-    });
+    return res.status(404).json({ valid: false, reason: "member_not_found" });
   }
 
   const verification = verifyDynamicQrTokenForUser(token, user);
