@@ -1,9 +1,10 @@
-import { Clock3, RefreshCw, ShieldAlert } from "lucide-react";
+import { Clock3, FileText, RefreshCw, ShieldAlert } from "lucide-react";
 import { DigitalPatch } from "../DigitalPatch.jsx";
 import { InfoStat } from "./DashboardUI.jsx";
 
-export function EscudoTab({ user, isActive, qr, loadingQr, qrError, secondsRemaining, onRefresh }) {
+export function EscudoTab({ user, isActive, qr, loadingQr, qrError, secondsRemaining, onRefresh, onOpenDocuments }) {
   const candidate = user.patente === "Candidato";
+  const documentPending = /documento/i.test(qrError || "");
 
   return <>
     <DigitalPatch user={user} active={isActive}>
@@ -20,7 +21,7 @@ export function EscudoTab({ user, isActive, qr, loadingQr, qrError, secondsRemai
           <h4 className="mt-4 text-lg font-black uppercase text-zinc-400">{candidate ? "Jornada em avaliação" : "QR oculto por segurança"}</h4>
           <p className="mx-auto mt-2 max-w-xs text-sm leading-6 text-zinc-600">{candidate ? "Seu cadastro já existe na sede digital. A Diretoria acompanha sua jornada e o QR será liberado depois da entrada como Próspero e da regularização da assinatura." : "A assinatura está inativa. O QR só volta a ser emitido quando a situação do associado estiver regularizada."}</p>
         </div>}
-        {qrError&&<p className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{qrError}</p>}
+        {qrError&&<div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300"><p>{qrError}</p>{documentPending && onOpenDocuments && <button type="button" onClick={onOpenDocuments} className="mt-3 inline-flex items-center gap-2 border border-red-400/25 bg-red-400/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-red-200"><FileText className="h-4 w-4" /> Revisar documentos</button>}</div>}
       </div>
     </DigitalPatch>
     <section className="grid grid-cols-2 gap-3"><InfoStat title={candidate ? "Jornada" : "Validação"} value={candidate ? "Em avaliação" : isActive?"Liberada":"Bloqueada"}/><InfoStat title={candidate ? "Próxima etapa" : "Código"} value={candidate ? "Próspero" : isActive?"Rotativo • HMAC":"Suspenso"}/></section>
