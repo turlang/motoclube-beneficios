@@ -10,15 +10,24 @@ import {
 } from "../services/motorcycleHealthService.js";
 
 const blank = z.object({}).passthrough();
-const optionalDate = z.union([z.coerce.date(), z.null()]).optional();
-const optionalNumber = z.union([z.coerce.number().min(0), z.null()]).optional();
+const nullableDate = z.preprocess(
+  (value) => value === "" || value === null ? null : value,
+  z.union([z.coerce.date(), z.null()])
+).optional();
+const nullableNumber = z.preprocess(
+  (value) => value === "" || value === null ? null : value,
+  z.union([z.coerce.number().min(0), z.null()])
+).optional();
 const reminderKeys = Object.keys(REMINDER_LABELS);
 const serviceCategories = ["oleo", "pneus", "freios", "corrente", "revisao", "eletrica", "motor", "outro"];
 
 export const updateMotorcycleProfileSchema = z.object({
   body: z.object({
     apelidoMoto: z.string().trim().max(60).optional(),
-    ano: z.union([z.coerce.number().int().min(1900).max(2100), z.null()]).optional(),
+    ano: z.preprocess(
+      (value) => value === "" || value === null ? null : value,
+      z.union([z.coerce.number().int().min(1900).max(2100), z.null()])
+    ).optional(),
     cor: z.string().trim().max(50).optional(),
     odometroKm: z.coerce.number().min(0).optional(),
     observacoes: z.string().trim().max(1500).optional()
@@ -30,8 +39,8 @@ export const updateMotorcycleProfileSchema = z.object({
 export const updateReminderSchema = z.object({
   body: z.object({
     label: z.string().trim().min(2).max(80).optional(),
-    nextDate: optionalDate,
-    nextKm: optionalNumber,
+    nextDate: nullableDate,
+    nextKm: nullableNumber,
     notes: z.string().trim().max(500).optional(),
     active: z.boolean().optional()
   }).refine((value) => Object.keys(value).length > 0, "Informe ao menos um campo."),
@@ -43,13 +52,13 @@ export const createServiceSchema = z.object({
   body: z.object({
     category: z.enum(serviceCategories),
     date: z.coerce.date(),
-    odometerKm: optionalNumber,
+    odometerKm: nullableNumber,
     providerName: z.string().trim().max(120).optional().default(""),
     partner: z.union([z.string().regex(/^[a-f\d]{24}$/i), z.null()]).optional().default(null),
     description: z.string().trim().min(3).max(1200),
-    cost: optionalNumber,
-    nextDate: optionalDate,
-    nextKm: optionalNumber
+    cost: nullableNumber,
+    nextDate: nullableDate,
+    nextKm: nullableNumber
   }),
   params: blank,
   query: blank
@@ -75,6 +84,26 @@ function serializeService(item) {
 
 async function loadUser(userId) {
   return User.findById(userId).select("nome apelidoEstrada email patente statusAssinatura moto nucleo createdAt");
+}
+
+export async function listMaintenancePartners(req, res) {
+  const partners = await Partner.find({
+    ativo: true,
+    categoria: { $in: ["oficina", "pecas", "lavagem", "outros"] }
+  })
+    .select("nome categoria telefone endereco")
+    .sort({ nome: 1 })
+    .lean();
+
+  return res.json({
+    partners: partners.map((item) => ({
+      id: item._id.toString(),
+      nome: item.nome,
+      categoria: item.categoria,
+      telefone: item.telefone || "",
+      endereco: item.endereco || null
+    }))
+  });
 }
 
 export async function getMyMotorcycle(req, res) {
