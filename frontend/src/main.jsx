@@ -16,6 +16,7 @@ import "./mc-documents.css";
 import "./mc-garage.css";
 import "./mc-finance.css";
 import "./mc-video-polish.css";
+import "./mc-final-fixes.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
