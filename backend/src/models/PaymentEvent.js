@@ -27,6 +27,16 @@ const paymentEventSchema = new Schema(
       enum: ["paid", "failed", "pending"],
       required: true
     },
+    referenceMonth: {
+      type: String,
+      match: /^\d{4}-\d{2}$/,
+      default: null
+    },
+    amountCents: {
+      type: Number,
+      min: 0,
+      default: null
+    },
     processedAt: {
       type: Date,
       default: null
