@@ -10,16 +10,12 @@ import { adminRouter } from "./routes/adminRoutes.js";
 import { paymentRouter } from "./routes/paymentRoutes.js";
 import { benefitRouter } from "./routes/benefitRoutes.js";
 import { partnerAuthRouter } from "./routes/partnerAuthRoutes.js";
-import {
-  errorHandler,
-  notFoundHandler
-} from "./middlewares/errorHandler.js";
+import { clubRouter } from "./routes/clubRoutes.js";
+import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 
 export const app = express();
 
 if (process.env.NODE_ENV === "production") {
-  // O Render coloca o Web Service atrás de proxy.
-  // Necessário para IP/protocolo corretos em recursos como rate-limit/cookies.
   app.set("trust proxy", 1);
 }
 
@@ -42,24 +38,13 @@ if (!allowedOrigin) {
 app.use(
   cors({
     origin(origin, callback) {
-      // Requisições sem Origin são permitidas para health checks e clientes server-to-server.
       if (!origin) return callback(null, true);
-
-      if (origin === allowedOrigin) {
-        return callback(null, true);
-      }
-
-      return callback(
-        new Error("Origem bloqueada pela política CORS.")
-      );
+      if (origin === allowedOrigin) return callback(null, true);
+      return callback(new Error("Origem bloqueada pela política CORS."));
     },
     credentials: true,
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "x-partner-key",
-      "x-webhook-secret"
-    ]
+    allowedHeaders: ["Content-Type", "x-partner-key", "x-webhook-secret"]
   })
 );
 
@@ -75,6 +60,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/club", clubRouter);
 app.use("/api/benefits", benefitRouter);
 app.use("/api/partner/auth", partnerAuthRouter);
 app.use("/api/qr", qrRouter);
