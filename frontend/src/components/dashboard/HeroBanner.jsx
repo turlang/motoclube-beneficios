@@ -7,7 +7,8 @@ const labels = {
   escudo: ["ESCUDO DA IRMANDADE", "Sua identidade de estrada e validação em tempo real."],
   beneficios: ["PARCEIROS DE ESTRADA", "Benefícios escolhidos para a rotina sobre duas rodas."],
   sos: ["REDE DE APOIO", "Quando a estrada aperta, a irmandade precisa estar perto."],
-  carteira: ["VIDA NO CLUBE", "Situação da assinatura e registros da sua caminhada."],
+  carteira: ["VIDA NO CLUBE", "Eventos, rotas e confirmações da sua caminhada."],
+  mural: ["MURAL DA IRMANDADE", "Avisos, convocações e comunicados oficiais da Diretoria."],
   perfil: ["FICHA DO IRMÃO", "Patente, moto e identidade dentro da irmandade."],
   diretoria: ["COMANDO DA IRMANDADE", "Membros, parceiros e operação da sede digital."]
 };
