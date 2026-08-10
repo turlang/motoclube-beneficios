@@ -1,8 +1,9 @@
 import { UserRound } from "lucide-react";
 import { DetailRow, SectionHeader } from "./DashboardUI.jsx";
 import { JourneyProgress } from "./JourneyProgress.jsx";
+import { DocumentsPanel } from "./DocumentsPanel.jsx";
 
-export function PerfilTab({ user, journey, journeyLoading, journeyError }) {
+export function PerfilTab({ user, journey, journeyLoading, journeyError, documents, documentsLoading, documentsError, pendingRequiredCount, onAcceptDocument }) {
   return (
     <>
       <SectionHeader eyebrow="Perfil do integrante" title="Sua identidade e sua caminhada dentro da irmandade" />
@@ -27,6 +28,7 @@ export function PerfilTab({ user, journey, journeyLoading, journeyError }) {
       </section>
 
       <JourneyProgress journey={journey} loading={journeyLoading} error={journeyError} />
+      <DocumentsPanel documents={documents} loading={documentsLoading} error={documentsError} pendingRequiredCount={pendingRequiredCount} onAccept={onAcceptDocument} />
     </>
   );
 }
