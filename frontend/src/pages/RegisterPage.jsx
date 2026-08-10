@@ -41,29 +41,29 @@ export function RegisterPage() {
       <div className="mc-auth-overlay" />
       <header className="mc-auth-top">
         <Link to="/" className="mc-auth-back"><ArrowLeft /> Voltar para o motoclube</Link>
-        <span>ENTRADA NA IRMANDADE • NOVO ASSOCIADO</span>
+        <span>ENTRADA NA IRMANDADE • NOVO CANDIDATO</span>
       </header>
 
       <section className="mc-register-grid">
         <aside className="mc-register-story">
           <div className="mc-register-crest"><BrandCrest active size="large" /></div>
-          <p className="mc-auth-kicker">ANTES DO BENEFÍCIO, VEM O COMPROMISSO</p>
+          <p className="mc-auth-kicker">ANTES DO ESCUDO, VEM A CAMINHADA</p>
           <h1>TODO ESCUDO COMEÇA <span>COM UM PRIMEIRO PASSO.</span></h1>
-          <p>O cadastro inicia sua caminhada como <strong>Próspero</strong>. A identidade digital é criada imediatamente, mas o QR de benefícios só é liberado quando a situação da assinatura estiver ativa.</p>
+          <p>O cadastro inicia sua jornada como <strong>Candidato</strong>. A Diretoria acompanha padrinho, convivência e requisitos internos. Depois da aprovação, a entrada como <strong>Próspero</strong> fica registrada no histórico do clube.</p>
           <div className="mc-register-steps">
             <div><b>01</b><span>Identidade</span><small>Nome, apelido e CPF.</small></div>
             <div><b>02</b><span>Sua máquina</span><small>Modelo e placa da moto.</small></div>
-            <div><b>03</b><span>Entrada</span><small>Patente inicial Próspero.</small></div>
+            <div><b>03</b><span>Jornada</span><small>Entrada inicial como Candidato.</small></div>
           </div>
         </aside>
 
         <div className="mc-auth-panel mc-register-panel">
           <div className="mc-auth-panel-bar">FICHA DE ENTRADA • IRMÃOS DO ASFALTO</div>
-          <p className="mc-auth-kicker">NOVO ASSOCIADO</p>
-          <h2>CRIE SUA IDENTIDADE DE ESTRADA</h2>
+          <p className="mc-auth-kicker">NOVO CANDIDATO</p>
+          <h2>INICIE SUA CAMINHADA</h2>
 
           <form onSubmit={handleSubmit} className="mc-register-form">
-            <FormSection title="IDENTIDADE DO IRMÃO" />
+            <FormSection title="IDENTIDADE DE ESTRADA" />
             <Field icon={<UserRound />} label="Nome completo" value={form.nome} onChange={(value) => updateField("nome", value)} placeholder="Seu nome" />
             <Field icon={<IdCard />} label="Apelido de estrada" value={form.apelidoEstrada} onChange={(value) => updateField("apelidoEstrada", value)} placeholder="Ex.: Falcão" />
             <Field icon={<IdCard />} label="CPF" value={form.cpf} onChange={(value) => updateField("cpf", value)} placeholder="000.000.000-00" inputMode="numeric" />
@@ -78,11 +78,11 @@ export function RegisterPage() {
 
             {error && <p className="mc-auth-error mc-register-full">{error}</p>}
             <button type="submit" disabled={submitting} className="mc-auth-submit mc-register-full">
-              {submitting ? "CRIANDO SUA IDENTIDADE..." : "CRIAR MEU ESCUDO"}<ArrowRight />
+              {submitting ? "INICIANDO SUA JORNADA..." : "INICIAR MINHA JORNADA"}<ArrowRight />
             </button>
           </form>
 
-          <p className="mc-register-note">A entrada digital não substitui as regras internas, convivência, avaliação ou demais critérios definidos pela Diretoria do motoclube.</p>
+          <p className="mc-register-note">O cadastro digital inicia a etapa de Candidato. O QR de benefícios permanece bloqueado até a entrada como Próspero e a ativação da assinatura. Critérios internos continuam sob responsabilidade da Diretoria.</p>
         </div>
       </section>
     </main>
