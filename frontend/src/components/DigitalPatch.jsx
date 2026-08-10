@@ -2,17 +2,24 @@ import { Bike, CheckCircle2, Crown, ShieldAlert, Star } from "lucide-react";
 import { BrandCrest } from "./BrandCrest.jsx";
 
 const rankStars = {
+  Candidato: 0,
   "Próspero": 1,
   "Meio-Escudo": 2,
-  "Escudado": 3,
-  "Diretoria": 4
+  Escudado: 3,
+  Diretoria: 4
 };
 
 export function DigitalPatch({ user, active = true, children }) {
-  const stars = rankStars[user.patente] || 1;
+  const stars = rankStars[user.patente] ?? 0;
+  const candidate = user.patente === "Candidato";
+  const statusText = candidate
+    ? "Entrada em avaliação • jornada iniciada"
+    : active
+      ? "Escudo liberado • irmão na ativa"
+      : "Escudo suspenso • assinatura inativa";
 
   return (
-    <section className={["digital-patch leather-panel", active ? "digital-patch-active" : "digital-patch-inactive"].join(" ")}>
+    <section className={["digital-patch leather-panel", active ? "digital-patch-active" : "digital-patch-inactive", candidate ? "digital-patch-candidate" : ""].join(" ")}>
       <div className="patch-rivet patch-rivet-tl" />
       <div className="patch-rivet patch-rivet-tr" />
       <div className="patch-rivet patch-rivet-bl" />
@@ -32,9 +39,9 @@ export function DigitalPatch({ user, active = true, children }) {
             </div>
           </div>
 
-          <div className={["rounded-2xl border px-3 py-2 text-right", active ? "border-[#d96b1f]/35 bg-[#d96b1f]/10" : "border-zinc-800 bg-zinc-900/70"].join(" ")}>
+          <div className={["rounded-2xl border px-3 py-2 text-right", active ? "border-[#d96b1f]/35 bg-[#d96b1f]/10" : candidate ? "border-[#b99665]/30 bg-[#b99665]/10" : "border-zinc-800 bg-zinc-900/70"].join(" ")}>
             <p className="text-[9px] font-black uppercase tracking-[0.28em] text-zinc-500">Patente</p>
-            <p className={["mt-1 text-xs font-black uppercase", active ? "text-[#e38a48]" : "text-zinc-500"].join(" ")}>{user.patente}</p>
+            <p className={["mt-1 text-xs font-black uppercase", active ? "text-[#e38a48]" : candidate ? "text-[#d6b98c]" : "text-zinc-500"].join(" ")}>{user.patente}</p>
           </div>
         </div>
 
@@ -53,9 +60,9 @@ export function DigitalPatch({ user, active = true, children }) {
           <PatchSpec label="Placa" value={user.moto.placa} icon={<span className="text-xs font-black">BR</span>} />
         </div>
 
-        <div className={["mt-3 flex items-center justify-center gap-2 rounded-2xl border px-3 py-2.5", active ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border-zinc-800 bg-zinc-900/60 text-zinc-600"].join(" ")}>
+        <div className={["mt-3 flex items-center justify-center gap-2 rounded-2xl border px-3 py-2.5", active ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : candidate ? "border-[#b99665]/25 bg-[#b99665]/10 text-[#d6b98c]" : "border-zinc-800 bg-zinc-900/60 text-zinc-600"].join(" ")}>
           {active ? <CheckCircle2 className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
-          <span className="text-[10px] font-black uppercase tracking-[0.22em]">{active ? "Escudo liberado • irmão na ativa" : "Escudo suspenso • assinatura inativa"}</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.22em]">{statusText}</span>
         </div>
 
         {children}
