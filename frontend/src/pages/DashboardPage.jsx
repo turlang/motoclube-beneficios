@@ -6,6 +6,7 @@ import { HeroBanner } from "../components/dashboard/HeroBanner.jsx";
 import { EscudoTab } from "../components/dashboard/EscudoTab.jsx";
 import { BeneficiosTab } from "../components/dashboard/BeneficiosTab.jsx";
 import { ClubeTab } from "../components/dashboard/ClubeTab.jsx";
+import { MuralTab } from "../components/dashboard/MuralTab.jsx";
 import { SosTab } from "../components/dashboard/SosTab.jsx";
 import { PerfilTab } from "../components/dashboard/PerfilTab.jsx";
 import { DiretoriaTab } from "../components/dashboard/DiretoriaTab.jsx";
@@ -27,6 +28,11 @@ export function DashboardPage() {
   const [clubEvents, setClubEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventsError, setEventsError] = useState("");
+  const [announcements, setAnnouncements] = useState([]);
+  const [communicationsLoading, setCommunicationsLoading] = useState(false);
+  const [communicationsError, setCommunicationsError] = useState("");
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingAckCount, setPendingAckCount] = useState(0);
   const [adminOverview, setAdminOverview] = useState(null);
   const [adminMembers, setAdminMembers] = useState([]);
   const [adminPartners, setAdminPartners] = useState([]);
@@ -74,6 +80,36 @@ export function DashboardPage() {
     await loadClubEvents();
   }
 
+  const loadCommunications = useCallback(async () => {
+    setCommunicationsLoading(true); setCommunicationsError("");
+    try {
+      const data = await api("/api/communications");
+      setAnnouncements(data.announcements || []);
+      setUnreadCount(data.unreadCount || 0);
+      setPendingAckCount(data.pendingAckCount || 0);
+    } catch (error) {
+      setCommunicationsError(error.message);
+    } finally {
+      setCommunicationsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCommunications();
+    const intervalId = window.setInterval(loadCommunications, 60000);
+    return () => window.clearInterval(intervalId);
+  }, [loadCommunications]);
+
+  async function markAnnouncementRead(id) {
+    await api(`/api/communications/${id}/read`, { method: "POST" });
+    await loadCommunications();
+  }
+
+  async function acknowledgeAnnouncement(id) {
+    await api(`/api/communications/${id}/ack`, { method: "POST" });
+    await loadCommunications();
+  }
+
   const loadAdminData = useCallback(async () => {
     if (!isDiretoria) return;
     setAdminLoading(true);
@@ -101,7 +137,11 @@ export function DashboardPage() {
   useEffect(() => { if (activeTab === "diretoria" && isDiretoria) loadAdminData(); }, [activeTab, isDiretoria, loadAdminData]);
 
   async function updateMember(id, field, value) {
-    const endpoint = field === "patente" ? `/api/admin/members/${id}/patente` : `/api/admin/members/${id}/status`;
+    const endpoint = field === "patente"
+      ? `/api/admin/members/${id}/patente`
+      : field === "statusAssinatura"
+        ? `/api/admin/members/${id}/status`
+        : `/api/admin/members/${id}/nucleo`;
     await api(endpoint, { method: "PATCH", body: JSON.stringify({ [field]: value }) });
     await loadAdminData();
   }
@@ -119,7 +159,7 @@ export function DashboardPage() {
             <div><b>{user.apelidoEstrada}</b><small>{user.patente}</small></div>
           </div>
           <div className="mc-app-actions">
-            <button className="mc-icon-button" aria-label="Notificações"><Bell /></button>
+            <button onClick={() => setActiveTab("mural")} className={unreadCount > 0 ? "mc-icon-button has-unread" : "mc-icon-button"} aria-label={`Comunicados${unreadCount ? `, ${unreadCount} não lidos` : ""}`}><Bell />{unreadCount > 0 && <span className="mc-bell-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}</button>
             <button onClick={logout} className="mc-icon-button" aria-label="Sair"><LogOut /></button>
           </div>
         </div>
@@ -131,6 +171,7 @@ export function DashboardPage() {
           {activeTab === "escudo" && <EscudoTab user={user} isActive={isActive} qr={qr} loadingQr={loadingQr} qrError={qrError} secondsRemaining={secondsRemaining} onRefresh={loadQr} />}
           {activeTab === "beneficios" && <BeneficiosTab benefits={benefits} loading={benefitsLoading} error={benefitsError} />}
           {activeTab === "carteira" && <ClubeTab isActive={isActive} events={clubEvents} loading={eventsLoading} error={eventsError} onRsvp={updateRsvp} isDiretoria={isDiretoria} onEventsRefresh={loadClubEvents} />}
+          {activeTab === "mural" && <MuralTab announcements={announcements} loading={communicationsLoading} error={communicationsError} unreadCount={unreadCount} pendingAckCount={pendingAckCount} onRead={markAnnouncementRead} onAck={acknowledgeAnnouncement} />}
           {activeTab === "sos" && <SosTab />}
           {activeTab === "perfil" && <PerfilTab user={user} />}
           {activeTab === "diretoria" && isDiretoria && <DiretoriaTab overview={adminOverview} members={adminMembers} partners={adminPartners} clubContent={clubContent} loading={adminLoading} onUpdateMember={updateMember} onRefresh={loadAdminData} />}
