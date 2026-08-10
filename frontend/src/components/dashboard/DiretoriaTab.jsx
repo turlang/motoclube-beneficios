@@ -7,6 +7,7 @@ import { TerritoryMediaManager } from "./TerritoryMediaManager.jsx";
 import { CommunicationManager } from "./CommunicationManager.jsx";
 import { JourneyManager } from "./JourneyManager.jsx";
 import { DocumentManager } from "./DocumentManager.jsx";
+import { FleetHealthManager } from "./FleetHealthManager.jsx";
 
 export function DiretoriaTab({ overview, members, partners, clubContent, loading, onUpdateMember, onRefresh }) {
   const [search, setSearch] = useState("");
@@ -65,6 +66,7 @@ export function DiretoriaTab({ overview, members, partners, clubContent, loading
 
       <JourneyManager members={members} onRefresh={onRefresh} />
       <DocumentManager />
+      <FleetHealthManager />
       <CommunicationManager chapters={chapters} />
       <ClubContentManager content={clubContent} onRefresh={onRefresh} />
       <TerritoryMediaManager content={clubContent} onRefresh={onRefresh} />
