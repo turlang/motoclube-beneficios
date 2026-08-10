@@ -1,0 +1,2 @@
+.mc-site .mc-divider{grid-template-columns:1fr auto 1fr}.mc-site .mc-divider>strong{text-align:center;color:#776e63;font-size:9px;letter-spacing:.26em}.mc-site .mc-divider>span{min-width:0}
+@media(max-width:767px){.mc-site .mc-divider{grid-template-columns:1fr auto 1fr}.mc-site .mc-divider>strong{display:block;font-size:8px;letter-spacing:.18em}}
