@@ -23,9 +23,6 @@ function createSignature(userId, expiresAt, userQrSecret) {
 export function createDynamicQrToken(user) {
   const ttl = getTtlSeconds();
   const nowSeconds = Math.floor(Date.now() / 1000);
-
-  // Usa janelas fixas. Dentro da mesma janela o token é estável,
-  // na janela seguinte muda automaticamente.
   const expiresAt = (Math.floor(nowSeconds / ttl) + 1) * ttl;
 
   const payload = {
@@ -34,11 +31,7 @@ export function createDynamicQrToken(user) {
   };
 
   const encodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const signature = createSignature(
-    payload.uid,
-    expiresAt,
-    user.qrCodeToken
-  );
+  const signature = createSignature(payload.uid, expiresAt, user.qrCodeToken);
 
   return {
     token: `${encodedPayload}.${signature}`,
@@ -57,13 +50,10 @@ export function parseDynamicQrToken(token) {
   }
 
   const [encodedPayload, receivedSignature] = parts;
-
   let payload;
 
   try {
-    payload = JSON.parse(
-      Buffer.from(encodedPayload, "base64url").toString("utf8")
-    );
+    payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8"));
   } catch {
     throw new Error("QR_TOKEN_INVALID");
   }
@@ -72,10 +62,7 @@ export function parseDynamicQrToken(token) {
     throw new Error("QR_TOKEN_INVALID");
   }
 
-  return {
-    payload,
-    receivedSignature
-  };
+  return { payload, receivedSignature };
 }
 
 export function verifyDynamicQrTokenForUser(token, user) {
@@ -90,12 +77,7 @@ export function verifyDynamicQrTokenForUser(token, user) {
     return { valid: false, reason: "expired" };
   }
 
-  const expectedSignature = createSignature(
-    payload.uid,
-    payload.exp,
-    user.qrCodeToken
-  );
-
+  const expectedSignature = createSignature(payload.uid, payload.exp, user.qrCodeToken);
   const receivedBuffer = Buffer.from(receivedSignature);
   const expectedBuffer = Buffer.from(expectedSignature);
 
@@ -103,13 +85,13 @@ export function verifyDynamicQrTokenForUser(token, user) {
     return { valid: false, reason: "invalid_signature" };
   }
 
-  const validSignature = crypto.timingSafeEqual(
-    receivedBuffer,
-    expectedBuffer
-  );
-
+  const validSignature = crypto.timingSafeEqual(receivedBuffer, expectedBuffer);
   if (!validSignature) {
     return { valid: false, reason: "invalid_signature" };
+  }
+
+  if (user.patente === "Candidato") {
+    return { valid: false, reason: "candidate_not_approved" };
   }
 
   if (user.statusAssinatura !== "ativo") {
