@@ -2,6 +2,7 @@ import { UserRound } from "lucide-react";
 import { DetailRow, SectionHeader } from "./DashboardUI.jsx";
 import { JourneyProgress } from "./JourneyProgress.jsx";
 import { DocumentsPanel } from "./DocumentsPanel.jsx";
+import { MotorcycleHealthPanel } from "./MotorcycleHealthPanel.jsx";
 
 export function PerfilTab({ user, journey, journeyLoading, journeyError, documents, documentsLoading, documentsError, pendingRequiredCount, onAcceptDocument }) {
   return (
@@ -27,6 +28,7 @@ export function PerfilTab({ user, journey, journeyLoading, journeyError, documen
         </div>
       </section>
 
+      <MotorcycleHealthPanel />
       <JourneyProgress journey={journey} loading={journeyLoading} error={journeyError} />
       <DocumentsPanel documents={documents} loading={documentsLoading} error={documentsError} pendingRequiredCount={pendingRequiredCount} onAccept={onAcceptDocument} />
     </>
