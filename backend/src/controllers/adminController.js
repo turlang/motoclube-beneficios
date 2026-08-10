@@ -3,6 +3,7 @@ import { User } from "../models/User.js";
 import { Partner } from "../models/Partner.js";
 import { Benefit } from "../models/Benefit.js";
 import { QrValidation } from "../models/QrValidation.js";
+import { ClubChapter } from "../models/ClubChapter.js";
 import { publicUser } from "../utils/publicUser.js";
 
 const patents = ["Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
@@ -21,6 +22,12 @@ export const changePatentSchema = z.object({
 
 export const changeStatusSchema = z.object({
   body: z.object({ statusAssinatura: z.enum(["ativo", "inativo"]) }),
+  params: z.object({ id: objectIdSchema }),
+  query: z.object({}).passthrough()
+});
+
+export const changeChapterSchema = z.object({
+  body: z.object({ nucleo: z.union([objectIdSchema, z.null()]) }),
   params: z.object({ id: objectIdSchema }),
   query: z.object({}).passthrough()
 });
@@ -59,27 +66,31 @@ export const createBenefitSchema = z.object({
 export async function changeMemberPatent(req, res) {
   const { id } = req.validated.params;
   const { patente } = req.validated.body;
-
-  const user = await User.findByIdAndUpdate(id, { $set: { patente } }, { new: true, runValidators: true });
-
+  const user = await User.findByIdAndUpdate(id, { $set: { patente } }, { new: true, runValidators: true }).populate("nucleo", "nome cidade estado");
   if (!user) return res.status(404).json({ message: "Membro não encontrado." });
-
   return res.json({ message: "Patente atualizada.", user: publicUser(user) });
 }
 
 export async function changeMemberStatus(req, res) {
   const { id } = req.validated.params;
   const { statusAssinatura } = req.validated.body;
-
-  const user = await User.findByIdAndUpdate(
-    id,
-    { $set: { statusAssinatura } },
-    { new: true, runValidators: true }
-  );
-
+  const user = await User.findByIdAndUpdate(id, { $set: { statusAssinatura } }, { new: true, runValidators: true }).populate("nucleo", "nome cidade estado");
   if (!user) return res.status(404).json({ message: "Membro não encontrado." });
-
   return res.json({ message: "Status atualizado.", user: publicUser(user) });
+}
+
+export async function changeMemberChapter(req, res) {
+  const { id } = req.validated.params;
+  const { nucleo } = req.validated.body;
+
+  if (nucleo) {
+    const chapter = await ClubChapter.findById(nucleo);
+    if (!chapter || !chapter.ativo) return res.status(404).json({ message: "Núcleo não encontrado ou inativo." });
+  }
+
+  const user = await User.findByIdAndUpdate(id, { $set: { nucleo } }, { new: true, runValidators: true }).populate("nucleo", "nome cidade estado");
+  if (!user) return res.status(404).json({ message: "Membro não encontrado." });
+  return res.json({ message: nucleo ? "Núcleo atualizado." : "Membro removido do núcleo.", user: publicUser(user) });
 }
 
 export async function listMembers(req, res) {
@@ -95,10 +106,9 @@ export async function listMembers(req, res) {
       }
     : {};
 
-  const members = await User.find(query).sort({ createdAt: -1 }).limit(100);
+  const members = await User.find(query).populate("nucleo", "nome cidade estado").sort({ createdAt: -1 }).limit(100);
   return res.json({ members: members.map(publicUser) });
 }
-
 
 export async function listPartners(req, res) {
   const partners = await Partner.find({})
@@ -106,7 +116,6 @@ export async function listPartners(req, res) {
     .sort({ nome: 1 })
     .limit(200)
     .lean();
-
   return res.json({ partners });
 }
 
@@ -122,14 +131,11 @@ export async function adminOverview(req, res) {
     })
   ]);
 
-  return res.json({
-    overview: { totalMembers, activeMembers, partners, benefits, validationsToday }
-  });
+  return res.json({ overview: { totalMembers, activeMembers, partners, benefits, validationsToday } });
 }
 
 export async function createPartner(req, res) {
   const partner = await Partner.create(req.validated.body);
-
   return res.status(201).json({
     partner: {
       id: partner._id.toString(),
@@ -147,6 +153,5 @@ export async function createBenefit(req, res) {
 
   const benefit = await Benefit.create(req.validated.body);
   await benefit.populate("parceiro", "nome categoria");
-
   return res.status(201).json({ benefit });
 }
