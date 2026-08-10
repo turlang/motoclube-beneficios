@@ -23,22 +23,26 @@ const SERVICE_TYPES = [
   ["outro", "Outro"]
 ];
 
+const emptyService = () => ({
+  category: "revisao",
+  date: new Date().toISOString().slice(0, 10),
+  odometerKm: "",
+  providerName: "",
+  partner: "",
+  description: "",
+  cost: "",
+  nextDate: "",
+  nextKm: ""
+});
+
 export function MotorcycleHealthPanel() {
   const [data, setData] = useState(null);
+  const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [profileForm, setProfileForm] = useState({ apelidoMoto: "", ano: "", cor: "", odometroKm: "", observacoes: "" });
   const [reminderForms, setReminderForms] = useState({});
-  const [serviceForm, setServiceForm] = useState({
-    category: "revisao",
-    date: new Date().toISOString().slice(0, 10),
-    odometerKm: "",
-    providerName: "",
-    description: "",
-    cost: "",
-    nextDate: "",
-    nextKm: ""
-  });
+  const [serviceForm, setServiceForm] = useState(emptyService);
 
   const profile = data?.profile;
   const services = data?.services || [];
@@ -47,8 +51,12 @@ export function MotorcycleHealthPanel() {
     setLoading(true);
     setMessage("");
     try {
-      const response = await api("/api/motorcycle/me");
+      const [response, partnerData] = await Promise.all([
+        api("/api/motorcycle/me"),
+        api("/api/motorcycle/partners")
+      ]);
       setData(response);
+      setPartners(partnerData.partners || []);
       syncForms(response.profile);
     } catch (error) {
       setMessage(error.message);
@@ -139,22 +147,14 @@ export function MotorcycleHealthPanel() {
           date: new Date(`${serviceForm.date}T12:00:00`).toISOString(),
           odometerKm: serviceForm.odometerKm === "" ? null : Number(serviceForm.odometerKm),
           providerName: serviceForm.providerName,
+          partner: serviceForm.partner || null,
           description: serviceForm.description,
           cost: serviceForm.cost === "" ? null : Number(serviceForm.cost),
           nextDate: serviceForm.nextDate ? new Date(`${serviceForm.nextDate}T12:00:00`).toISOString() : null,
           nextKm: serviceForm.nextKm === "" ? null : Number(serviceForm.nextKm)
         })
       });
-      setServiceForm({
-        category: "revisao",
-        date: new Date().toISOString().slice(0, 10),
-        odometerKm: "",
-        providerName: "",
-        description: "",
-        cost: "",
-        nextDate: "",
-        nextKm: ""
-      });
+      setServiceForm(emptyService());
       setMessage("Serviço registrado no histórico.");
       await load();
     } catch (error) { setMessage(error.message); }
@@ -221,6 +221,7 @@ export function MotorcycleHealthPanel() {
             <label className="mc-garage-field"><span>Tipo</span><select value={serviceForm.category} onChange={(event) => setServiceForm((current) => ({ ...current, category: event.target.value }))}>{SERVICE_TYPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
             <GarageField label="Data" type="date" value={serviceForm.date} onChange={(value) => setServiceForm((current) => ({ ...current, date: value }))} />
             <GarageField label="Hodômetro no serviço" type="number" value={serviceForm.odometerKm} onChange={(value) => setServiceForm((current) => ({ ...current, odometerKm: value }))} />
+            <label className="mc-garage-field"><span>Parceiro credenciado (opcional)</span><select value={serviceForm.partner} onChange={(event) => setServiceForm((current) => ({ ...current, partner: event.target.value }))}><option value="">Outro prestador</option>{partners.map((partner) => <option key={partner.id} value={partner.id}>{partner.nome} • {partner.categoria}</option>)}</select></label>
             <GarageField label="Oficina / profissional" value={serviceForm.providerName} onChange={(value) => setServiceForm((current) => ({ ...current, providerName: value }))} placeholder="Nome do local" />
             <GarageField label="Custo (opcional)" type="number" value={serviceForm.cost} onChange={(value) => setServiceForm((current) => ({ ...current, cost: value }))} placeholder="0,00" />
             <GarageField label="Próxima data (opcional)" type="date" value={serviceForm.nextDate} onChange={(value) => setServiceForm((current) => ({ ...current, nextDate: value }))} />
@@ -236,7 +237,7 @@ export function MotorcycleHealthPanel() {
           {services.map((service) => <article key={service.id}>
             <div><b>{serviceTypeLabel(service.category)}</b><span>{formatDate(service.date)}{service.odometerKm !== null ? ` • ${formatKm(service.odometerKm)}` : ""}</span></div>
             <p>{service.description}</p>
-            <small>{service.providerName || service.partner?.nome || "Prestador não informado"}{service.cost !== null ? ` • ${formatMoney(service.cost)}` : ""}</small>
+            <small>{service.partner?.nome || service.providerName || "Prestador não informado"}{service.cost !== null ? ` • ${formatMoney(service.cost)}` : ""}</small>
           </article>)}
         </div>
       </>}
