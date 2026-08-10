@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { User } from "../models/User.js";
 import { QrValidation } from "../models/QrValidation.js";
+import { hasPendingRequiredDocuments } from "../services/documentService.js";
 import {
   createDynamicQrToken,
   parseDynamicQrToken,
@@ -17,6 +18,15 @@ export async function getMyQr(req, res) {
   if (req.user.statusAssinatura !== "ativo") {
     return res.status(403).json({
       message: "Assinatura inativa. QR Code indisponível."
+    });
+  }
+
+  const compliance = await hasPendingRequiredDocuments(req.user);
+  if (compliance.pending) {
+    return res.status(403).json({
+      reason: "required_documents_pending",
+      pendingDocuments: compliance.count,
+      message: `Existem ${compliance.count} documento(s) obrigatório(s) aguardando aceite. Acesse seu Perfil para regularizar.`
     });
   }
 
@@ -66,7 +76,17 @@ export async function validatePartnerQr(req, res) {
     return res.status(404).json({ valid: false, reason: "member_not_found" });
   }
 
-  const verification = verifyDynamicQrTokenForUser(token, user);
+  let verification = verifyDynamicQrTokenForUser(token, user);
+  if (verification.valid) {
+    const compliance = await hasPendingRequiredDocuments(user);
+    if (compliance.pending) {
+      verification = {
+        valid: false,
+        reason: "required_documents_pending",
+        pendingDocuments: compliance.count
+      };
+    }
+  }
 
   await QrValidation.create({
     parceiro: req.partner?._id || null,
