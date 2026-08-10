@@ -1,7 +1,38 @@
+import { BadgeCheck, ShieldAlert } from "lucide-react";
 import { BrandCrest } from "../BrandCrest.jsx";
-import { RoadBackdrop } from "../RoadBackdrop.jsx";
+
+const PHOTO = "https://images.pexels.com/photos/9789338/pexels-photo-9789338.jpeg?auto=compress&cs=tinysrgb&w=1800";
+
+const labels = {
+  escudo: ["ESCUDO DA IRMANDADE", "Sua identidade de estrada e validação em tempo real."],
+  beneficios: ["PARCEIROS DE ESTRADA", "Benefícios escolhidos para a rotina sobre duas rodas."],
+  sos: ["REDE DE APOIO", "Quando a estrada aperta, a irmandade precisa estar perto."],
+  carteira: ["VIDA NO CLUBE", "Situação da assinatura e registros da sua caminhada."],
+  perfil: ["FICHA DO IRMÃO", "Patente, moto e identidade dentro da irmandade."],
+  diretoria: ["COMANDO DA IRMANDADE", "Membros, parceiros e operação da sede digital."]
+};
+
 export function HeroBanner({ user, activeTab }) {
-  const labels={escudo:["Seu escudo digital","Identidade de estrada. Validação em tempo real."],beneficios:["Parceiros de rota","Economize onde a rotina realmente pesa."],sos:["Rede de apoio 24H","Na rua, um ajuda o outro."],carteira:["Sua carteira","Assinatura e histórico em um só lugar."],perfil:["Sua identidade","Patente, moto e dados da irmandade."],diretoria:["Comando da irmandade","Membros, parceiros e operação na palma da mão."]};
-  const [title,subtitle]=labels[activeTab]||labels.escudo;
-  return <section className="route-banner relative overflow-hidden rounded-[2rem] border border-amber-400/20"><div className="absolute inset-0 opacity-80"><RoadBackdrop compact /></div><div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/25"/><div className="warning-stripes absolute inset-x-0 top-0 h-1.5 opacity-90"/><div className="relative flex min-h-40 items-center justify-between gap-3 p-5 pt-7"><div className="max-w-[16rem]"><p className="text-[10px] font-black uppercase tracking-[0.34em] text-amber-400">Salve, {user.apelidoEstrada}</p><h2 className="mt-2 text-2xl font-black uppercase leading-none text-white">{title}</h2><p className="mt-3 text-sm leading-5 text-zinc-500">{subtitle}</p></div><div className="scale-[0.68] opacity-95 sm:scale-75"><BrandCrest active={user.statusAssinatura === "ativo"} compact /></div></div></section>;
+  const [title, subtitle] = labels[activeTab] || labels.escudo;
+  const active = user.statusAssinatura === "ativo";
+
+  return (
+    <section className="mc-member-hero">
+      <img src={PHOTO} alt="Motociclistas em comboio" className="mc-member-hero-photo" />
+      <div className="mc-member-hero-overlay" />
+      <div className="mc-member-hero-copy">
+        <p>SALVE, {user.apelidoEstrada}</p>
+        <h2>{title}</h2>
+        <span>{subtitle}</span>
+        <div className="mc-member-hero-status">
+          {active ? <BadgeCheck /> : <ShieldAlert />}
+          <b>{active ? "ESCUDO LIBERADO" : "ESCUDO SUSPENSO"}</b>
+          <i />
+          <small>PATENTE {user.patente}</small>
+        </div>
+      </div>
+      <div className="mc-member-hero-patch"><BrandCrest active={active} compact /></div>
+      <div className="mc-member-hero-word">IRMÃOS</div>
+    </section>
+  );
 }

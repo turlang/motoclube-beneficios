@@ -6,6 +6,7 @@ import { AuthProvider } from "./contexts/AuthContext.jsx";
 import "./index.css";
 import "./club-theme.css";
 import "./mc-institutional.css";
+import "./mc-app.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
