@@ -13,6 +13,7 @@ import "./mc-events.css";
 import "./mc-communications.css";
 import "./mc-journey.css";
 import "./mc-documents.css";
+import "./mc-garage.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
