@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const patents = ["Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
+const patents = ["Candidato", "Próspero", "Meio-Escudo", "Escudado", "Diretoria"];
 
 const clubAnnouncementSchema = new mongoose.Schema(
   {
