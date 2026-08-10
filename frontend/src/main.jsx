@@ -7,6 +7,7 @@ import "./index.css";
 import "./club-theme.css";
 import "./mc-institutional.css";
 import "./mc-app.css";
+import "./mc-content.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
