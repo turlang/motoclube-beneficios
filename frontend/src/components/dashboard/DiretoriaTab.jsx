@@ -3,6 +3,7 @@ import { BadgeCheck, Crown, Sparkles, TicketPercent } from "lucide-react";
 import { api } from "../../services/api.js";
 import { AdminInput, SectionHeader, StatAdmin } from "./DashboardUI.jsx";
 import { ClubContentManager } from "./ClubContentManager.jsx";
+import { TerritoryMediaManager } from "./TerritoryMediaManager.jsx";
 
 export function DiretoriaTab({ overview, members, partners, clubContent, loading, onUpdateMember, onRefresh }) {
   const [search, setSearch] = useState("");
@@ -57,6 +58,7 @@ export function DiretoriaTab({ overview, members, partners, clubContent, loading
       </section>
 
       <ClubContentManager content={clubContent} onRefresh={onRefresh} />
+      <TerritoryMediaManager content={clubContent} onRefresh={onRefresh} />
 
       {message && <div className="mc-content-message">{message}</div>}
 
