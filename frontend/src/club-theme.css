@@ -1,0 +1,179 @@
+:root {
+  --club-black: #050505;
+  --club-asphalt: #0c0c0c;
+  --club-graphite: #1a1a19;
+  --club-orange: #d96b1f;
+  --club-orange-light: #e38a48;
+  --club-red: #a11b1b;
+  --club-metal: #7d7a70;
+  --club-ivory: #f2e5cf;
+  --club-muted: #8e887c;
+}
+
+.club-page {
+  background:
+    radial-gradient(circle at 75% 10%, rgba(161, 27, 27, .08), transparent 28rem),
+    repeating-linear-gradient(22deg, rgba(255,255,255,.012) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, #060606, #0b0a09 48%, #050505);
+}
+
+.club-header {
+  border-bottom: 1px solid rgba(217, 107, 31, .18);
+  background: rgba(5, 5, 5, .91);
+  box-shadow: 0 12px 35px rgba(0,0,0,.34);
+  backdrop-filter: blur(18px);
+}
+
+.club-display {
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Roboto Condensed", sans-serif;
+  font-weight: 900;
+  letter-spacing: .035em;
+  text-shadow: 0 2px 0 #000;
+}
+
+.club-flame-text {
+  color: var(--club-orange);
+  text-shadow: 0 0 18px rgba(217,107,31,.27), 0 3px 0 #5f1b0d;
+}
+
+.club-cta,
+.club-secondary {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.club-cta {
+  color: #080706;
+  background: linear-gradient(180deg, #e88b48, #c45416);
+  border: 1px solid #efaa75;
+  box-shadow: 0 8px 0 #6f260c, 0 16px 30px rgba(0,0,0,.38), 0 0 30px rgba(217,107,31,.12);
+}
+
+.club-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 0 #6f260c, 0 18px 34px rgba(0,0,0,.42), 0 0 34px rgba(217,107,31,.2); }
+.club-cta:active { transform: translateY(4px); box-shadow: 0 3px 0 #6f260c, 0 8px 20px rgba(0,0,0,.38); }
+
+.club-secondary {
+  color: #ded5c6;
+  border: 1px solid rgba(125,122,112,.45);
+  background: linear-gradient(180deg, rgba(31,31,30,.92), rgba(8,8,8,.96));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.club-secondary:hover { border-color: rgba(217,107,31,.42); color: #f2e5cf; }
+
+.club-hero { background: #050505; }
+.club-grain { opacity: .28; mix-blend-mode: screen; background-image: repeating-radial-gradient(circle at 20% 20%, rgba(255,255,255,.045) 0 1px, transparent 1px 5px); }
+
+.leather-panel {
+  background:
+    repeating-linear-gradient(125deg, rgba(255,255,255,.018) 0 1px, transparent 1px 5px),
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.035), transparent 20rem),
+    linear-gradient(145deg, #1a1816, #080706 65%, #030303);
+}
+
+.club-patch-showcase {
+  border: 2px solid rgba(217,107,31,.45);
+  border-radius: 2.6rem;
+  box-shadow: 0 26px 60px rgba(0,0,0,.62), inset 0 0 0 1px rgba(242,229,207,.05), inset 0 0 40px rgba(161,27,27,.06);
+}
+
+.club-rivet {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #efe7da 0 10%, #8d8b84 32%, #2a2927 72%);
+  box-shadow: 0 2px 5px #000;
+}
+
+.club-rocker {
+  width: 82%;
+  border: 1px solid rgba(217,107,31,.5);
+  border-radius: 70% 70% 18% 18% / 80% 80% 24% 24%;
+  background: #070605;
+  padding: 10px 12px;
+  color: #e38a48;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .28em;
+  box-shadow: inset 0 0 18px rgba(217,107,31,.04), 0 8px 18px rgba(0,0,0,.45);
+}
+
+.club-motto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #8e887c;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .2em;
+}
+.club-motto span { width: 4px; height: 4px; border-radius: 50%; background: #d96b1f; }
+
+.club-manifesto {
+  background:
+    linear-gradient(90deg, rgba(161,27,27,.06), transparent 40%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.014) 0 1px, transparent 1px 8px),
+    #0a0908;
+}
+
+.club-metal-card,
+.club-story-card {
+  border: 1px solid rgba(125,122,112,.24);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.025), transparent 30%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px),
+    linear-gradient(180deg, #181817, #090909);
+  box-shadow: 0 18px 38px rgba(0,0,0,.34), inset 0 0 0 1px rgba(255,255,255,.015);
+}
+
+.club-metal-card { border-top: 3px solid #d96b1f; transition: transform .2s ease, border-color .2s ease; }
+.club-metal-card:hover { transform: translateY(-4px); border-color: rgba(217,107,31,.55); }
+
+.club-icon-plate {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(217,107,31,.4);
+  background: linear-gradient(145deg, #22120b, #080706);
+  color: #e38a48;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025), 0 8px 18px rgba(0,0,0,.34);
+}
+
+.club-life {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(161,27,27,.08), transparent 24rem),
+    linear-gradient(180deg, #090807, #050505);
+}
+
+.club-story-card { min-height: 190px; }
+.club-story-number { position: absolute; right: 15px; bottom: -15px; color: rgba(217,107,31,.055); font: 900 7rem/1 Impact, sans-serif; }
+
+.club-callout {
+  border: 1px solid rgba(217,107,31,.32);
+  background:
+    linear-gradient(90deg, rgba(161,27,27,.18), rgba(217,107,31,.06) 38%, rgba(0,0,0,.2)),
+    repeating-linear-gradient(-55deg, rgba(217,107,31,.04) 0 10px, transparent 10px 22px),
+    #0d0b0a;
+  box-shadow: 0 26px 60px rgba(0,0,0,.45), inset 0 0 45px rgba(161,27,27,.05);
+}
+
+.club-crest { filter: drop-shadow(0 12px 18px rgba(0,0,0,.55)); }
+
+.digital-patch-active { border-color: rgba(217,107,31,.44) !important; box-shadow: 0 0 0 1px rgba(217,107,31,.08), 0 28px 58px rgba(0,0,0,.55), inset 0 0 44px rgba(161,27,27,.06) !important; }
+.patch-rocker { border-color: rgba(217,107,31,.46) !important; color: #e38a48 !important; }
+.patch-aura { background: rgba(161,27,27,.12) !important; }
+.patch-motto { color: rgba(227,138,72,.75) !important; }
+.patch-motto i { background: #a11b1b !important; }
+.qr-frame { box-shadow: 0 0 0 2px rgba(217,107,31,.78), 0 0 30px rgba(161,27,27,.18) !important; }
+.dock-shell { border-color: rgba(217,107,31,.2) !important; background: rgba(5,4,4,.96) !important; }
+
+@media (max-width: 767px) {
+  .club-hero { min-height: 720px; }
+  .club-patch-showcase { border-radius: 2rem; }
+}
