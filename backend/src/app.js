@@ -15,6 +15,7 @@ import { eventAdminRouter, eventRouter } from "./routes/eventRoutes.js";
 import { communicationAdminRouter, communicationRouter } from "./routes/communicationRoutes.js";
 import { journeyAdminRouter, journeyRouter } from "./routes/journeyRoutes.js";
 import { documentAdminRouter, documentRouter } from "./routes/documentRoutes.js";
+import { motorcycleAdminRouter, motorcycleRouter } from "./routes/motorcycleRoutes.js";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 
 export const app = express();
@@ -69,6 +70,7 @@ app.use("/api/events", eventRouter);
 app.use("/api/communications", communicationRouter);
 app.use("/api/journey", journeyRouter);
 app.use("/api/documents", documentRouter);
+app.use("/api/motorcycle", motorcycleRouter);
 app.use("/api/benefits", benefitRouter);
 app.use("/api/partner/auth", partnerAuthRouter);
 app.use("/api/qr", qrRouter);
@@ -77,6 +79,7 @@ app.use("/api/admin/events", eventAdminRouter);
 app.use("/api/admin/communications", communicationAdminRouter);
 app.use("/api/admin/journey", journeyAdminRouter);
 app.use("/api/admin/documents", documentAdminRouter);
+app.use("/api/admin/motorcycles", motorcycleAdminRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/payments", paymentRouter);
 
