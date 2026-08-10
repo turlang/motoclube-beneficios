@@ -12,6 +12,29 @@ import {
   listMembers,
   listPartners
 } from "../controllers/adminController.js";
+import {
+  createEvent,
+  createEventSchema,
+  createOfficer,
+  createOfficerSchema,
+  createPost,
+  createPostSchema,
+  deleteEvent,
+  deleteEventSchema,
+  deleteOfficer,
+  deleteOfficerSchema,
+  deletePost,
+  deletePostSchema,
+  getClubContent,
+  updateClubProfile,
+  updateClubProfileSchema,
+  updateEvent,
+  updateEventSchema,
+  updateOfficer,
+  updateOfficerSchema,
+  updatePost,
+  updatePostSchema
+} from "../controllers/clubAdminController.js";
 import { requireAuth } from "../middlewares/auth.js";
 import { requireDiretoria } from "../middlewares/requireDiretoria.js";
 import { validate } from "../middlewares/validate.js";
@@ -28,3 +51,15 @@ adminRouter.patch("/members/:id/patente", validate(changePatentSchema), asyncHan
 adminRouter.patch("/members/:id/status", validate(changeStatusSchema), asyncHandler(changeMemberStatus));
 adminRouter.post("/partners", validate(createPartnerSchema), asyncHandler(createPartner));
 adminRouter.post("/benefits", validate(createBenefitSchema), asyncHandler(createBenefit));
+
+adminRouter.get("/club/content", asyncHandler(getClubContent));
+adminRouter.patch("/club/profile", validate(updateClubProfileSchema), asyncHandler(updateClubProfile));
+adminRouter.post("/club/officers", validate(createOfficerSchema), asyncHandler(createOfficer));
+adminRouter.patch("/club/officers/:id", validate(updateOfficerSchema), asyncHandler(updateOfficer));
+adminRouter.delete("/club/officers/:id", validate(deleteOfficerSchema), asyncHandler(deleteOfficer));
+adminRouter.post("/club/events", validate(createEventSchema), asyncHandler(createEvent));
+adminRouter.patch("/club/events/:id", validate(updateEventSchema), asyncHandler(updateEvent));
+adminRouter.delete("/club/events/:id", validate(deleteEventSchema), asyncHandler(deleteEvent));
+adminRouter.post("/club/posts", validate(createPostSchema), asyncHandler(createPost));
+adminRouter.patch("/club/posts/:id", validate(updatePostSchema), asyncHandler(updatePost));
+adminRouter.delete("/club/posts/:id", validate(deletePostSchema), asyncHandler(deletePost));
