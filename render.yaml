@@ -2,24 +2,26 @@ services:
   - type: web
     name: motoclube-beneficios-api
     runtime: node
+    plan: free
+    region: virginia
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /health
-    autoDeployTrigger: commit
+    autoDeployTrigger: off
     envVars:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
       - key: QR_HMAC_SECRET
-        sync: false
+        generateValue: true
       - key: FRONTEND_URL
-        sync: false
+        value: https://motoclube-beneficios-web.onrender.com
       - key: PAYMENT_WEBHOOK_SECRET
-        sync: false
+        generateValue: true
       - key: COOKIE_SAME_SITE
         value: none
       - key: PARTNER_JWT_EXPIRES_IN
@@ -33,10 +35,10 @@ services:
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-    autoDeployTrigger: commit
+    autoDeployTrigger: off
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://motoclube-beneficios-api.onrender.com
     routes:
       - type: rewrite
         source: /*
