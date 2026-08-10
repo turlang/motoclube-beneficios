@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { User } from "../models/User.js";
+import { ensureMemberJourney } from "../services/journeyService.js";
 import { signAccessToken } from "../services/jwtService.js";
 import { getAuthCookieOptions } from "../utils/cookieOptions.js";
 import { isValidCpf, normalizeCpf } from "../utils/cpf.js";
@@ -31,9 +32,7 @@ export const loginSchema = z.object({
 });
 
 export async function register(req, res) {
-  const { nome, apelidoEstrada, cpf, email, senha, moto } =
-    req.validated.body;
-
+  const { nome, apelidoEstrada, cpf, email, senha, moto } = req.validated.body;
   const normalizedCpf = normalizeCpf(cpf);
 
   if (!isValidCpf(normalizedCpf)) {
@@ -41,16 +40,11 @@ export async function register(req, res) {
   }
 
   const existingUser = await User.findOne({
-    $or: [
-      { email: email.toLowerCase() },
-      { cpf: normalizedCpf }
-    ]
+    $or: [{ email: email.toLowerCase() }, { cpf: normalizedCpf }]
   });
 
   if (existingUser) {
-    return res.status(409).json({
-      message: "E-mail ou CPF já cadastrado."
-    });
+    return res.status(409).json({ message: "E-mail ou CPF já cadastrado." });
   }
 
   const user = await User.create({
@@ -65,55 +59,36 @@ export async function register(req, res) {
     }
   });
 
+  await ensureMemberJourney(user);
+
   const accessToken = signAccessToken(user._id.toString());
   const cookieName = process.env.COOKIE_NAME || "mc_access";
-
-  res.cookie(
-    cookieName,
-    accessToken,
-    getAuthCookieOptions()
-  );
+  res.cookie(cookieName, accessToken, getAuthCookieOptions());
 
   return res.status(201).json({
-    message: "Cadastro realizado.",
+    message: "Cadastro realizado. Sua jornada começa como Candidato e segue para avaliação da Diretoria.",
     user: publicUser(user)
   });
 }
 
 export async function login(req, res) {
   const { email, senha } = req.validated.body;
-
-  const user = await User.findOne({
-    email: email.toLowerCase()
-  }).select("+senha");
+  const user = await User.findOne({ email: email.toLowerCase() }).select("+senha");
 
   if (!user) {
-    return res.status(401).json({
-      message: "Credenciais inválidas."
-    });
+    return res.status(401).json({ message: "Credenciais inválidas." });
   }
 
   const passwordMatches = await user.comparePassword(senha);
-
   if (!passwordMatches) {
-    return res.status(401).json({
-      message: "Credenciais inválidas."
-    });
+    return res.status(401).json({ message: "Credenciais inválidas." });
   }
 
   const accessToken = signAccessToken(user._id.toString());
   const cookieName = process.env.COOKIE_NAME || "mc_access";
+  res.cookie(cookieName, accessToken, getAuthCookieOptions());
 
-  res.cookie(
-    cookieName,
-    accessToken,
-    getAuthCookieOptions()
-  );
-
-  return res.json({
-    message: "Login realizado.",
-    user: publicUser(user)
-  });
+  return res.json({ message: "Login realizado.", user: publicUser(user) });
 }
 
 export async function logout(req, res) {
@@ -131,7 +106,5 @@ export async function logout(req, res) {
 }
 
 export async function me(req, res) {
-  return res.json({
-    user: publicUser(req.user)
-  });
+  return res.json({ user: publicUser(req.user) });
 }
