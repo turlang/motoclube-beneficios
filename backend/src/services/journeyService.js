@@ -7,6 +7,7 @@ const DEFAULT_REQUIREMENTS = {
   Candidato: [
     { key: "padrinho", label: "Padrinho definido pela Diretoria", required: true },
     { key: "apresentacao", label: "Apresentação e orientação inicial concluídas", required: true },
+    { key: "documentos", label: "Regulamentos e termos obrigatórios aceitos", required: true },
     { key: "primeiro_encontro", label: "Primeira participação registrada no clube", required: true }
   ],
   "Próspero": [
@@ -37,9 +38,27 @@ export function requirementsFor(patente) {
   }));
 }
 
+function mergeCurrentRequirements(journey, patente) {
+  const template = requirementsFor(patente);
+  const byKey = new Map(journey.requisitos.map((item) => [item.key, item]));
+  let changed = false;
+
+  for (const requirement of template) {
+    if (!byKey.has(requirement.key)) {
+      journey.requisitos.push(requirement);
+      changed = true;
+    }
+  }
+
+  return changed;
+}
+
 export async function ensureMemberJourney(user) {
   let journey = await MemberJourney.findOne({ user: user._id });
-  if (journey) return journey;
+  if (journey) {
+    if (mergeCurrentRequirements(journey, user.patente)) await journey.save();
+    return journey;
+  }
 
   journey = await MemberJourney.create({
     user: user._id,
